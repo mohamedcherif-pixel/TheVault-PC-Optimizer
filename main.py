@@ -5,7 +5,7 @@ import urllib.request
 import json
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.0.3"
+APP_VERSION = "v1.0.4"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 try:
