@@ -1,0 +1,52 @@
+name: Auto-Build and Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller pygame requests
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller TheVault_Optimizer.spec
+
+    - name: Build Inno Setup Installer
+      run: |
+        iscc setup.iss
+
+    - name: Extract version from main.py
+      id: get_version
+      shell: bash
+      run: |
+        VERSION=$(grep "APP_VERSION =" main.py | cut -d'"' -f2)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.get_version.outputs.version }}
+        name: Release ${{ steps.get_version.outputs.version }}
+        draft: false
+        prerelease: false
+        files: |
+          dist/TheVault_Optimizer.exe
+          Output/TheVault_Setup.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
