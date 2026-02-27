@@ -1367,9 +1367,9 @@ CATEGORIES = {
 class OptimizerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title(f"Tools by Blandy | v{APP_VERSION}")
-        self.root.geometry("1200x800")
-        self.root.minsize(1000, 600)
+        self.root.title(f"Tools by Blandy  —  {APP_VERSION}")
+        self.root.geometry("1400x900")
+        self.root.minsize(900, 600)
         self.root.state('zoomed')
         self.root.configure(bg=BG)
 
@@ -1385,7 +1385,7 @@ class OptimizerApp:
         self.music_on = True       # Track music state
 
         self._build_ui()
-        self._show_category(list(CATEGORIES.keys())[0])
+        self._show_specs_page()   # open on specs page by default
         self._play_music()
         
         # Check for updates in background
@@ -1705,25 +1705,23 @@ del "%~f0"
     # ── Build Layout ─────────────────────────────────────────────────
     def _build_ui(self):
         # ── Top Bar ──────────────────────────────────────────────────
-        topbar = tk.Frame(self.root, bg=BG, height=60)
+        topbar = tk.Frame(self.root, bg=BG, height=52)
         topbar.pack(fill="x")
         topbar.pack_propagate(False)
 
-        tk.Label(topbar, text="Tools by Blandy", font=("Arial", 16, "bold"),
-                 bg=BG, fg=ACCENT).pack(side="left", padx=22, pady=14)
-        tk.Label(topbar, text="System Optimization Utility",
-                 font=("Arial", 9), bg=BG, fg=TEXT_DIM).pack(side="left", pady=14)
+        tk.Label(topbar, text="Tools by Blandy", font=("Consolas", 15, "bold"),
+                 bg=BG, fg=ACCENT).pack(side="left", padx=20, pady=12)
+        tk.Label(topbar, text="PC Optimizer",
+                 font=("Consolas", 9), bg=BG, fg=TEXT_DIM).pack(side="left", pady=12)
 
-        # Music toggle
         self.music_on = True
-        self.music_btn = tk.Label(topbar, text="\U0001F50A", font=("Arial", 14),
+        self.music_btn = tk.Label(topbar, text="\U0001F50A", font=("Arial", 13),
                                    bg=BG, fg=TEXT_DIM, cursor="hand2")
-        self.music_btn.pack(side="right", padx=20)
+        self.music_btn.pack(side="right", padx=16)
         self.music_btn.bind("<Button-1>", self._toggle_music)
         self.music_btn.bind("<Enter>", lambda e: self._show_music_status())
         self.music_btn.bind("<Leave>", lambda e: self._hide_tooltip())
 
-        # Separator
         tk.Frame(self.root, bg=BORDER, height=1).pack(fill="x")
 
         # ── Body ─────────────────────────────────────────────────────
@@ -1731,21 +1729,39 @@ del "%~f0"
         body.pack(fill="both", expand=True)
 
         # Sidebar
-        self.sidebar = tk.Frame(body, bg=SIDEBAR_BG, width=220)
+        self.sidebar = tk.Frame(body, bg=SIDEBAR_BG, width=210)
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        tk.Label(self.sidebar, text="CATEGORIES", font=("Arial", 8, "bold"),
-                 bg=SIDEBAR_BG, fg=TEXT_DARK, anchor="w").pack(fill="x", padx=18, pady=(18, 6))
+        tk.Label(self.sidebar, text="menu", font=("Consolas", 8),
+                 bg=SIDEBAR_BG, fg=TEXT_DARK, anchor="w").pack(fill="x", padx=16, pady=(16, 4))
+
+        # Special "My PC" tab at the top
+        self.pc_btn = tk.Label(
+            self.sidebar,
+            text="  🖥  My PC",
+            font=("Consolas", 10),
+            bg=SIDEBAR_BG, fg=TEXT_DIM,
+            anchor="w", cursor="hand2",
+            padx=12, pady=8,
+        )
+        self.pc_btn.pack(fill="x")
+        self.pc_btn.bind("<Button-1>", lambda e: self._show_specs_page())
+        self.pc_btn.bind("<Enter>", lambda e: self.pc_btn.configure(bg=BG_HOVER) if self.active_cat != "__specs__" else None)
+        self.pc_btn.bind("<Leave>", lambda e: self.pc_btn.configure(bg=SIDEBAR_BG) if self.active_cat != "__specs__" else None)
+
+        # Divider text
+        tk.Label(self.sidebar, text="tweaks", font=("Consolas", 8),
+                 bg=SIDEBAR_BG, fg=TEXT_DARK, anchor="w").pack(fill="x", padx=16, pady=(10, 2))
 
         for cat_name, cat_data in CATEGORIES.items():
             btn = tk.Label(
                 self.sidebar,
-                text=f" {cat_data['icon']}  {cat_name}",
-                font=("Arial", 10),
+                text=f"  {cat_data['icon']}  {cat_name}",
+                font=("Consolas", 9),
                 bg=SIDEBAR_BG, fg=TEXT_DIM,
                 anchor="w", cursor="hand2",
-                padx=14, pady=8,
+                padx=12, pady=7,
             )
             btn.pack(fill="x")
             btn.bind("<Button-1>", lambda e, c=cat_name: self._show_category(c))
@@ -1753,26 +1769,7 @@ del "%~f0"
             btn.bind("<Leave>", lambda e, b=btn: b.configure(bg=SIDEBAR_BG) if b != self.cat_btns.get(self.active_cat) else None)
             self.cat_btns[cat_name] = btn
 
-        # Vert separator
         tk.Frame(body, bg=BORDER, width=1).pack(side="left", fill="y")
-
-        # Right Sidebar for Specs
-        self.specs_frame = tk.Frame(body, bg=SIDEBAR_BG, width=320)
-        self.specs_frame.pack(side="right", fill="y")
-        self.specs_frame.pack_propagate(False)
-        
-        tk.Label(self.specs_frame, text="SYSTEM SPECIFICATIONS", font=("Arial", 8, "bold"),
-                 bg=SIDEBAR_BG, fg=TEXT_DARK, anchor="w").pack(fill="x", padx=18, pady=(18, 6))
-                 
-        self.specs_lbl = tk.Label(self.specs_frame, text="Loading hardware info...", font=("Arial", 9),
-                                  bg=SIDEBAR_BG, fg=TEXT, anchor="nw", justify="left", wraplength=280)
-        self.specs_lbl.pack(fill="both", expand=True, padx=18, pady=10)
-        
-        # Load specs in background
-        threading.Thread(target=self._load_specs, daemon=True).start()
-
-        # Vert separator 2
-        tk.Frame(body, bg=BORDER, width=1).pack(side="right", fill="y")
 
         # Content area
         self.content_wrap = tk.Frame(body, bg=BG)
@@ -1842,6 +1839,11 @@ del "%~f0"
                 self._build_tweak_card(frame, tw)
             self.cat_frames[cat_name] = frame
 
+        # Specs page frame (lives inside scroll_inner alongside category frames)
+        self.specs_page_frame = tk.Frame(self.scroll_inner, bg=BG)
+        self._build_specs_page(self.specs_page_frame)
+        threading.Thread(target=self._load_specs, daemon=True).start()
+
     def _draw_apply_btn(self, color):
         c = self.apply_btn
         c.delete("all")
@@ -1859,33 +1861,217 @@ del "%~f0"
         return canvas.create_polygon(pts, smooth=True, **kw)
 
 
+    def _build_specs_page(self, parent):
+        # Title
+        tk.Label(parent, text="My PC", font=("Consolas", 18, "bold"),
+                 bg=BG, fg=TEXT, anchor="w").pack(fill="x", padx=28, pady=(24, 2))
+        tk.Label(parent, text="hardware specifications", font=("Consolas", 9),
+                 bg=BG, fg=TEXT_DIM, anchor="w").pack(fill="x", padx=30, pady=(0, 18))
+        tk.Frame(parent, bg=BORDER, height=1).pack(fill="x", padx=28, pady=(0, 16))
+
+        # The specs text area — plain monospace, no frills
+        self.specs_text = tk.Text(
+            parent,
+            font=("Consolas", 10),
+            bg=BG,
+            fg=TEXT,
+            relief="flat",
+            bd=0,
+            highlightthickness=0,
+            state="disabled",
+            wrap="word",
+            padx=30,
+            pady=4,
+            cursor="arrow",
+            selectbackground=SIDEBAR_SEL,
+        )
+        self.specs_text.pack(fill="both", expand=True)
+
+        # Tag styles
+        self.specs_text.tag_configure("header", font=("Consolas", 11, "bold"), foreground=ACCENT, spacing1=14, spacing3=2)
+        self.specs_text.tag_configure("val", font=("Consolas", 10), foreground=TEXT)
+        self.specs_text.tag_configure("label", font=("Consolas", 10), foreground=TEXT_DIM)
+        self.specs_text.tag_configure("dim", font=("Consolas", 9), foreground=TEXT_DARK)
+
+        self._set_specs_text("loading...")
+
+    def _set_specs_text(self, raw):
+        t = self.specs_text
+        t.config(state="normal")
+        t.delete("1.0", "end")
+        if raw == "loading...":
+            t.insert("end", "gathering info, give it a sec...\n", "dim")
+        else:
+            for line in raw.split("\n"):
+                line = line.rstrip()
+                if not line:
+                    t.insert("end", "\n")
+                elif line.startswith("##"):
+                    t.insert("end", "\n" + line[2:].strip() + "\n", "header")
+                elif ":" in line:
+                    idx = line.index(":")
+                    lbl = line[:idx + 1]
+                    val = line[idx + 1:]
+                    t.insert("end", f"  {lbl}", "label")
+                    t.insert("end", f"{val}\n", "val")
+                else:
+                    t.insert("end", f"  {line}\n", "val")
+        t.config(state="disabled")
+
     def _load_specs(self):
         try:
-            cmd = '''
-            $os = (Get-CimInstance Win32_OperatingSystem).Caption
-            $cpu = (Get-CimInstance Win32_Processor).Name
-            $gpu = (Get-CimInstance Win32_VideoController).Name -join ' | '
-            $ram = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
-            $mobo = (Get-CimInstance Win32_BaseBoard)
-            $moboName = $mobo.Manufacturer + ' ' + $mobo.Product
-            $disks = (Get-CimInstance Win32_DiskDrive) | ForEach-Object { $_.Model + ' (' + [math]::Round($_.Size / 1GB, 0) + ' GB)' } -join ' | '
-            
-            Write-Output "OS:`n$os`n"
-            Write-Output "CPU:`n$cpu`n"
-            Write-Output "GPU:`n$gpu`n"
-            Write-Output "RAM:`n$ram GB`n"
-            Write-Output "Motherboard:`n$moboName`n"
-            Write-Output "Storage:`n$disks"
-            '''
-            output = subprocess.check_output(["powershell", "-NoProfile", "-Command", cmd], text=True, creationflags=subprocess.CREATE_NO_WINDOW)
-            self.root.after(0, lambda: self.specs_lbl.configure(text=output.strip()))
+            cmd = r'''
+$ErrorActionPreference = "SilentlyContinue"
+
+## Operating System
+$os  = Get-CimInstance Win32_OperatingSystem
+$cs  = Get-CimInstance Win32_ComputerSystem
+Write-Output ("## Operating System")
+Write-Output ("Name: " + $os.Caption)
+Write-Output ("Build: " + $os.BuildNumber + "  (" + $os.Version + ")")
+Write-Output ("Architecture: " + $os.OSArchitecture)
+Write-Output ("Install Date: " + $os.InstallDate.ToString("yyyy-MM-dd"))
+Write-Output ("Last Boot: " + $os.LastBootUpTime.ToString("yyyy-MM-dd  HH:mm"))
+Write-Output ("Hostname: " + $env:COMPUTERNAME)
+Write-Output ("User: " + $env:USERNAME)
+Write-Output ""
+
+## CPU
+$cpu = Get-CimInstance Win32_Processor
+Write-Output "## CPU"
+Write-Output ("Name: " + $cpu.Name.Trim())
+Write-Output ("Cores: " + $cpu.NumberOfCores + "  /  Threads: " + $cpu.NumberOfLogicalProcessors)
+Write-Output ("Base Clock: " + $cpu.MaxClockSpeed + " MHz")
+Write-Output ("L2 Cache: " + [math]::Round($cpu.L2CacheSize / 1024, 1) + " MB  /  L3 Cache: " + [math]::Round($cpu.L3CacheSize / 1024, 1) + " MB")
+Write-Output ("Socket: " + $cpu.SocketDesignation)
+Write-Output ("Architecture: " + $cpu.Architecture)
+Write-Output ""
+
+## Memory
+Write-Output "## Memory"
+$ramTotal = [math]::Round($cs.TotalPhysicalMemory / 1GB, 2)
+Write-Output ("Total RAM: " + $ramTotal + " GB")
+$sticks = Get-CimInstance Win32_PhysicalMemory
+foreach ($s in $sticks) {
+    $cap  = [math]::Round($s.Capacity / 1GB, 0)
+    $spd  = $s.ConfiguredClockSpeed
+    $type = switch ($s.MemoryType) { 20 {"DDR"} 21 {"DDR2"} 24 {"DDR3"} 26 {"DDR4"} 34 {"DDR5"} default {"DDR ($($s.MemoryType))"}}
+    Write-Output ("  Slot " + $s.DeviceLocator + ":  " + $cap + " GB  " + $type + "  @ " + $spd + " MHz  —  " + $s.Manufacturer.Trim())
+}
+Write-Output ""
+
+## GPU
+Write-Output "## GPU"
+$gpus = Get-CimInstance Win32_VideoController
+foreach ($g in $gpus) {
+    Write-Output ("Name: " + $g.Name)
+    if ($g.AdapterRAM -gt 0) { Write-Output ("VRAM: " + [math]::Round($g.AdapterRAM / 1GB, 1) + " GB") }
+    Write-Output ("Driver: " + $g.DriverVersion + "  (" + $g.DriverDate.ToString("yyyy-MM-dd") + ")")
+    Write-Output ("Resolution: " + $g.CurrentHorizontalResolution + " x " + $g.CurrentVerticalResolution + "  @ " + $g.CurrentRefreshRate + " Hz")
+    Write-Output ""
+}
+
+## Storage
+Write-Output "## Storage"
+$disks = Get-CimInstance Win32_DiskDrive
+foreach ($d in $disks) {
+    $size = [math]::Round($d.Size / 1GB, 0)
+    Write-Output ("  " + $d.Model + "  —  " + $size + " GB  (" + $d.InterfaceType + ")")
+}
+$vols = Get-CimInstance Win32_LogicalDisk | Where-Object { $_.DriveType -eq 3 }
+foreach ($v in $vols) {
+    $free = [math]::Round($v.FreeSpace / 1GB, 1)
+    $tot  = [math]::Round($v.Size / 1GB, 1)
+    Write-Output ("  " + $v.DeviceID + "  " + $free + " GB free / " + $tot + " GB total")
+}
+Write-Output ""
+
+## Motherboard
+Write-Output "## Motherboard"
+$mb = Get-CimInstance Win32_BaseBoard
+Write-Output ("Name: " + $mb.Manufacturer + "  " + $mb.Product)
+Write-Output ("Serial: " + $mb.SerialNumber)
+$bios = Get-CimInstance Win32_BIOS
+Write-Output ("BIOS: " + $bios.Manufacturer + "  " + $bios.SMBIOSBIOSVersion + "  (" + $bios.ReleaseDate.ToString("yyyy-MM-dd") + ")")
+Write-Output ""
+
+## Network
+Write-Output "## Network"
+$nics = Get-CimInstance Win32_NetworkAdapter | Where-Object { $_.PhysicalAdapter -eq $true }
+foreach ($n in $nics) {
+    Write-Output ("  " + $n.Name)
+    $cfg = Get-CimInstance Win32_NetworkAdapterConfiguration | Where-Object { $_.Index -eq $n.DeviceID }
+    if ($cfg.IPAddress) { Write-Output ("    IP: " + ($cfg.IPAddress -join ",  ")) }
+    if ($cfg.MACAddress) { Write-Output ("    MAC: " + $cfg.MACAddress) }
+}
+Write-Output ""
+
+## Audio
+Write-Output "## Audio"
+$audio = Get-CimInstance Win32_SoundDevice
+foreach ($a in $audio) {
+    Write-Output ("  " + $a.Name)
+}
+Write-Output ""
+
+## Monitors
+Write-Output "## Monitors"
+$monitors = Get-CimInstance WmiMonitorID -Namespace root\wmi -ErrorAction SilentlyContinue
+if ($monitors) {
+    foreach ($m in $monitors) {
+        $name = [System.Text.Encoding]::ASCII.GetString($m.UserFriendlyName -ne 0).Trim()
+        Write-Output ("  " + $name)
+    }
+} else {
+    Write-Output "  (could not read monitor info)"
+}
+Write-Output ""
+
+## Power / Battery
+Write-Output "## Power"
+$batt = Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue
+if ($batt) {
+    Write-Output ("Battery: " + $batt.EstimatedChargeRemaining + "%  —  " + $batt.Name)
+    $status = switch ($batt.BatteryStatus) { 1 {"Discharging"} 2 {"AC, Full"} 3 {"Fully Charged"} default {"Unknown"}}
+    Write-Output ("Status: " + $status)
+} else {
+    Write-Output "  No battery (desktop)"
+}
+'''
+            output = subprocess.check_output(
+                ["powershell", "-NoProfile", "-NonInteractive", "-Command", cmd],
+                text=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=30
+            )
+            self.root.after(0, lambda t=output.strip(): self._set_specs_text(t))
         except Exception as e:
-            self.root.after(0, lambda: self.specs_lbl.configure(text=f"Failed to load specs.\n{e}"))
+            self.root.after(0, lambda: self._set_specs_text(f"Failed to load specs.\n{e}"))
+
+    def _show_specs_page(self):
+        if self.active_cat == "__specs__":
+            return
+        # deselect previous
+        if self.active_cat and self.active_cat in self.cat_btns:
+            self.cat_btns[self.active_cat].configure(bg=SIDEBAR_BG, fg=TEXT_DIM)
+        self.pc_btn.configure(bg=SIDEBAR_SEL, fg=ACCENT_GLOW)
+        self.active_cat = "__specs__"
+
+        self.cat_header.configure(text="🖥   My PC")
+        self.cat_count.configure(text="hardware at a glance")
+
+        for f in self.cat_frames.values():
+            f.pack_forget()
+        self.specs_page_frame.pack(fill="both", expand=True)
+        self.scroll_canvas.yview_moveto(0)
 
     # ── Category Switching ───────────────────────────────────────────
     def _show_category(self, cat_name):
         if self.active_cat == cat_name:
             return
+
+        # deselect specs tab if active
+        if self.active_cat == "__specs__":
+            self.pc_btn.configure(bg=SIDEBAR_BG, fg=TEXT_DIM)
+            self.specs_page_frame.pack_forget()
 
         # Reset old sidebar highlight
         if self.active_cat and self.active_cat in self.cat_btns:
@@ -1900,6 +2086,7 @@ del "%~f0"
         self.cat_count.configure(text=f"{count} tweak{'s' if count != 1 else ''} available")
 
         # Hide all, show selected
+        self.specs_page_frame.pack_forget()
         for f in self.cat_frames.values():
             f.pack_forget()
         self.cat_frames[cat_name].pack(fill="both", expand=True, padx=20, pady=4)
