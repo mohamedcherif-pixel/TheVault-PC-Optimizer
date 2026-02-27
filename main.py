@@ -8,7 +8,7 @@ import shlex
 import re
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.1.5"
+APP_VERSION = "v1.1.6"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 pygame = None
@@ -54,6 +54,25 @@ CATEGORIES = {
     "System  Core": {
         "icon": "\u2699",
         "tweaks": [
+            {
+                "name": "Disable All Background UWP Apps",
+                "desc": "Prevents modern Windows apps (UWP) from running in the background while you game. Frees up memory and CPU cycles.",
+                "risk": MEDIUM,
+                "cmds": [
+                    'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications" /v "GlobalUserDisabled" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy" /v "LetAppsRunInBackground" /t REG_DWORD /d 2 /f'
+                ]
+            },
+            {
+                "name": "Disable WaitToKillService (Faster OS Shutdown)",
+                "desc": "Forces services to kill faster when turning off or restarting the PC, reducing wait times.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control" /v "WaitToKillServiceTimeout" /t REG_SZ /d "2000" /f',
+                    'reg add "HKCU\\Control Panel\\Desktop" /v "AutoEndTasks" /t REG_SZ /d "1" /f',
+                    'reg add "HKCU\\Control Panel\\Desktop" /v "WaitToKillAppTimeout" /t REG_SZ /d "2000" /f'
+                ]
+            },
             {
                 "name": "Disable VBS / HVCI / Core Isolation",
                 "desc": "Removes the hypervisor layer that adds 5-10% overhead to every memory access and kernel call. Microsoft enables this silently on Win11.",
@@ -236,6 +255,23 @@ CATEGORIES = {
     "GPU  &  Gaming": {
         "icon": "-",
         "tweaks": [
+            {
+                "name": "Force Disable Fullscreen Optimizations (Global)",
+                "desc": "Prevents Windows from forcing pseudo-borderless mode on classic exclusive fullscreen games. Fixes micro-stutter.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKCU\\System\\GameConfigStore" /v "GameDVR_FSEBehaviorMode" /t REG_DWORD /d 2 /f',
+                    'reg add "HKCU\\System\\GameConfigStore" /v "GameDVR_DXGIHonorFSEWindowsCompatible" /t REG_DWORD /d 1 /f'
+                ]
+            },
+            {
+                "name": "Disable Content Adaptive Brightness (CABC)",
+                "desc": "Stops Windows from changing display brightness based on the game colors. Reduces input lag and visual stutter.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers" /v "MonitorVsync" /t REG_DWORD /d 0 /f'
+                ]
+            },
             {
                 "name": "Disable GPU Preemption",
                 "desc": "Tells the WDDM scheduler not to interrupt the GPU mid-frame. Frame-time variance drops 20-40%. Especially impactful in DX11.",
@@ -792,6 +828,23 @@ CATEGORIES = {
     "Mouse  &  Input": {
         "icon": "-",
         "tweaks": [
+            {
+                "name": "Optimize Mouse & Keyboard Queue (Input Latency)",
+                "desc": "Decreases data queue size for inputs, slightly reducing input latency at the driver level.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\kbdclass\\Parameters" /v "KeyboardDataQueueSize" /t REG_DWORD /d 20 /f',
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\mouclass\\Parameters" /v "MouseDataQueueSize" /t REG_DWORD /d 20 /f'
+                ]
+            },
+            {
+                "name": "Decrease Mouse Hover Time to 10ms",
+                "desc": "Significantly speeds up menu and UI popups.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\Control Panel\\Mouse" /v "MouseHoverTime" /t REG_SZ /d "10" /f'
+                ]
+            },
             {
                 "name": "MarkC Mouse Fix (1:1 Raw Input)",
                 "desc": "Patches SmoothMouseXCurve/YCurve to linear 1:1 at 100% DPI. Sets MouseSpeed=0, thresholds=0. True zero acceleration for gaming.",
@@ -1545,11 +1598,80 @@ class OptimizerApp:
         self._update_stats()
 
     def _scan_applied_tweaks(self):
+        # Prefetch bcdedit cache
+        try:
+            self._bcdedit_cache = subprocess.check_output("bcdedit /enum", shell=True, text=True, creationflags=0x08000000).lower()
+        except:
+            self._bcdedit_cache = ""
+
+        # Prefetch custom complex tweaks states
+        try:
+            ps_script = r"""
+            $state = @{}
+            try { $state.mmagent = [bool](Get-MMAgent).MemoryCompression } catch {}
+            try { $state.cfg = ((Get-ProcessMitigation -System).CFG.Enable -ne 0) } catch {}
+            try { $state.nagle = [bool](Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\*" -Name "TcpAckFrequency" -EA SilentlyContinue | Where-Object { $_.TcpAckFrequency -eq 1 -or $_.TCPNoDelay -eq 1 }) } catch {}
+            try { $state.netbios = [bool](Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces\*" -Name "NetbiosOptions" -EA SilentlyContinue | Where-Object { $_.NetbiosOptions -eq 2 }) } catch {}
+            try { $state.lso = [bool]((Get-NetAdapterAdvancedProperty -DisplayName "*Large Send Offload*" -EA SilentlyContinue).DisplayValue -match "Disabled") } catch {}
+            try { $state.rsc = [bool]((Get-NetAdapterRsc -EA SilentlyContinue | Where-Object IPv4Enabled -eq $true)) } catch {}
+            try { $state.msi = [bool](Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Enum\*\*\Device Parameters\Interrupt Management\MessageSignaledInterruptProperties" -Name "MSISupported" -EA SilentlyContinue | Where-Object { $_.MSISupported -eq 1 }) } catch {}
+            
+            try { 
+                $tcp = Get-NetTcpSetting -SettingName Internet -EA SilentlyContinue
+                $state.rss = [bool](Get-NetAdapterRss -EA SilentlyContinue | Where-Object Enabled -eq $true)
+                $state.heuristics = ($tcp.ScalingHeuristics -eq "Disabled")
+                $state.timestamps = ($tcp.Timestamps -eq "Disabled")
+                $state.ecn = ($tcp.EcnCapability -eq "Disabled")
+                $state.fastopen = ($tcp.AutoTuningLevelLocal -eq "Normal") # approximate proxy or not checked
+                $state.cubic = ($tcp.CongestionProvider -eq "CUBIC")
+                $state.chimney = $true # older os setting
+            } catch {}
+            ConvertTo-Json $state -Compress
+            """
+            out = subprocess.check_output(["powershell", "-NoProfile", "-Command", ps_script], text=True, creationflags=0x08000000)
+            import json
+            self._custom_cache = json.loads(out)
+        except:
+            self._custom_cache = {}
+
         for cat_name, cat_data in CATEGORIES.items():
             for tweak in cat_data["tweaks"]:
+                custom_state = self._check_custom(tweak["name"])
+                if custom_state is True:
+                    self.root.after(0, self._set_tweak_checked, tweak["name"])
+                    continue
+                elif custom_state is False:
+                    continue
+
                 if self._is_tweak_applied(tweak["cmds"]):
                     self.root.after(0, self._set_tweak_checked, tweak["name"])
 
+    def _check_custom(self, tweak_name):
+        c = getattr(self, "_custom_cache", {})
+        bc = getattr(self, "_bcdedit_cache", "")
+        
+        if tweak_name == "Disable Memory Compression": return c.get("mmagent") == False
+        if tweak_name == "Disable CFG / CET Process Mitigations": return c.get("cfg") == False
+        if "Nagle's Algorithm" in tweak_name: return c.get("nagle") == True
+        if "NetBIOS over TCP/IP" in tweak_name: return c.get("netbios") == True
+        if "Large Send Offload" in tweak_name: return c.get("lso") == True
+        if "Receive Segment Coalescing" in tweak_name: return c.get("rsc") == False
+        if "MSI Mode on All PCI Devices" in tweak_name: return c.get("msi") == True
+        
+        if "RSS & DCA" in tweak_name: return c.get("rss") == True or c.get("heuristics") == True
+        if "TCP Timestamps & ECN" in tweak_name: return c.get("timestamps") == True or c.get("ecn") == True
+        if "Congestion Control to CUBIC" in tweak_name: return c.get("cubic") == True
+        if "Network Offloads (Chimney" in tweak_name: return c.get("chimney") == True
+        
+        # BCDEDIT checks
+        if "DEP (Data Execution" in tweak_name: return "nx" in bc and "alwaysoff" in bc
+        if "Dynamic Tick" in tweak_name: return "disabledynamictick" in bc and "yes" in bc
+        if "TSC Timer (Remove HPET)" in tweak_name: return "useplatformclock" not in bc
+        if "TSC Sync Policy" in tweak_name: return "tscsyncpolicy" in bc and "enhanced" in bc
+        if "Boot Timeout to 0" in tweak_name: return "timeout" in bc and "0" in bc
+        if "Synthetic Timers" in tweak_name: return "useplatformtick" in bc and "yes" in bc
+        
+        return None
     def _set_tweak_checked(self, tweak_name):
         if tweak_name in self.tweak_vars:
             self.tweak_vars[tweak_name][0].set(True)
