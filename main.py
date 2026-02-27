@@ -8,7 +8,7 @@ import shlex
 import re
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.1.4"
+APP_VERSION = "v1.1.5"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 pygame = None
@@ -1779,7 +1779,11 @@ class OptimizerApp:
             current_pid  = os.getpid()
             # current_exe already set above (sys.executable, validated frozen)
 
+            # We use a VBScript wrapper to launch the PowerShell script completely
+            # detached from the current process tree, ensuring it survives when we exit.
+            vbs_script = os.path.join(os.environ["TEMP"], "vault_launcher.vbs")
             ps_script = os.path.join(os.environ["TEMP"], "vault_launcher.ps1")
+            
             with open(ps_script, "w", encoding="utf-8") as f:
                 f.write(f"""# vault_launcher.ps1  —  written by Tools by Blandy patcher
 $targetExe  = '{current_exe.replace("'", "''")}' 
@@ -1805,31 +1809,20 @@ Move-Item -LiteralPath $newExe    -Destination $targetExe -Force
 # Launch the new exe with a CLEAN environment (no _MEIPASS / stale PATH / PYTHONHOME)
 Start-Process -FilePath $targetExe -UseNewEnvironment
 
-# Self-delete this script
+# Self-delete scripts
+Remove-Item -LiteralPath '{vbs_script.replace("'", "''")}' -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
 """)
 
-            # Launch the PowerShell script fully detached so it outlives this process.
-            # Use CREATE_NEW_PROCESS_GROUP + DETACHED_PROCESS so it is NOT a child
-            # of this PyInstaller exe and cannot inherit any handles or env from it.
-            DETACHED_PROCESS    = 0x00000008
-            CREATE_NEW_PG       = 0x00000200
-            CREATE_NO_WIN       = 0x08000000
-            subprocess.Popen(
-                [
-                    "powershell.exe",
-                    "-NoProfile",
-                    "-NonInteractive",
-                    "-WindowStyle", "Hidden",
-                    "-ExecutionPolicy", "Bypass",
-                    "-File", ps_script,
-                ],
-                creationflags=DETACHED_PROCESS | CREATE_NEW_PG | CREATE_NO_WIN,
-                close_fds=True,
-                # DO NOT pass env= here — use the raw inherited env so powershell.exe
-                # itself launches correctly, but -UseNewEnvironment inside the script
-                # will strip everything before handing control to the new exe.
-            )
+            with open(vbs_script, "w", encoding="utf-8") as f:
+                f.write(f'''Set objShell = CreateObject("WScript.Shell")
+objShell.Run "powershell.exe -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File """ & "{ps_script}" & """", 0, False
+''')
+
+            # Launch the VBScript using wscript.exe (which naturally detaches)
+            os.startfile(vbs_script)
+            
+            # Force exit immediately so the PowerShell script can proceed
             os._exit(0)
 
         except Exception as e:
