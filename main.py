@@ -8,17 +8,10 @@ import shlex
 import re
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.1.0"
+APP_VERSION = "v1.1.1"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
-if not getattr(sys, 'frozen', False):
-    try:
-        import pygame
-    except ImportError:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "pygame"])
-        import pygame
-else:
-    import pygame
+pygame = None
 
 
 def is_admin():
@@ -49,10 +42,11 @@ SIDEBAR_SEL = "#37373d"
 
 
 # ─── Risk levels ────────────────────────────────────────────────────────
-SAFE   = ("SAFE",   GREEN,  "No risk. Fully reversible, no side effects.")
-LOW    = ("LOW",    YELLOW, "Minimal risk. Fully reversible.")
-MEDIUM = ("MEDIUM", ORANGE, "Moderate risk. Reduces a security layer or changes power behavior.")
-HIGH   = ("HIGH",   RED,    "Higher risk. Trades security for performance. Understand before applying.")
+# User request: show risk level colors (red/green/blue/yellow)
+SAFE   = ("SAFE",   "green",      "No risk. Fully reversible, no side effects.")
+LOW    = ("LOW",    "blue",       "Minimal risk. Fully reversible.")
+MEDIUM = ("MEDIUM", "goldenrod",  "Moderate risk. Reduces a security layer or changes power behavior.")
+HIGH   = ("HIGH",   "red",        "Higher risk. Trades security for performance. Understand before applying.")
 
 
 # ─── All categories and tweaks ──────────────────────────────────────────
@@ -1371,7 +1365,20 @@ class OptimizerApp:
         self.root.geometry("1400x900")
         self.root.minsize(900, 600)
         self.root.state('zoomed')
-        self.root.configure(bg=BG)
+
+        # Apply custom icon if it exists
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            icon_path = os.path.join(sys._MEIPASS, "gamephoto.ico")
+        else:
+            icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gamephoto.ico")
+        
+        if os.path.exists(icon_path):
+            try:
+                self.root.iconbitmap(icon_path)
+            except Exception:
+                pass
+
+        self.root.configure(bg="white")
 
         # Track tweak state
         self.tweak_vars = {}   # tweak_name -> (BooleanVar, tweak_dict)
@@ -1384,8 +1391,8 @@ class OptimizerApp:
         self.music_error = None    # Track music loading errors
         self.music_on = True       # Track music state
 
-        self._build_ui()
-        self._show_specs_page()   # open on specs page by default
+        self._build_ui_basic()
+        threading.Thread(target=self._load_specs, daemon=True).start()
         self._play_music()
         
         # Check for updates in background
@@ -1393,6 +1400,149 @@ class OptimizerApp:
         
         # Scan for already applied tweaks
         threading.Thread(target=self._scan_applied_tweaks, daemon=True).start()
+
+    # ── Minimal UI (single white page) ─────────────────────────────────
+    def _build_ui_basic(self):
+        self.root.configure(bg="white")
+
+        # ── Top bar (very basic) ──────────────────────────────────
+        top = tk.Frame(self.root, bg="white")
+        top.pack(fill="x")
+
+        tk.Label(top, text=f"Tools by Blandy — {APP_VERSION}", font=("Segoe UI", 9, "bold"), bg="white", fg="black").pack(
+            side="left", padx=8, pady=4
+        )
+
+        self.music_btn = tk.Button(top, text="Music: ON", font=("Segoe UI", 8), command=self._toggle_music)
+        self.music_btn.pack(side="right", padx=8, pady=3)
+
+        # ── Body: split screen (no scrolling) ──────────────────────
+        paned = tk.PanedWindow(self.root, orient="horizontal", bg="white", sashwidth=6, relief="flat")
+        paned.pack(fill="both", expand=True)
+
+        # Left: specs
+        specs_frame = tk.Frame(paned, bg="white")
+        tk.Label(specs_frame, text="PC Specs", font=("Segoe UI", 8, "bold"), bg="white", fg="black", anchor="w").pack(
+            fill="x", padx=8, pady=(6, 2)
+        )
+        self.specs_text = tk.Text(
+            specs_frame,
+            font=("Consolas", 6),
+            bg="white",
+            fg="black",
+            relief="flat",
+            bd=0,
+            highlightthickness=0,
+            state="disabled",
+            wrap="none",
+            padx=8,
+            pady=6,
+            cursor="arrow",
+        )
+        self.specs_text.pack(fill="both", expand=True)
+        self._set_specs_text("loading...")
+
+        # Right: tweaks (compact grid, multi-column)
+        tweaks_frame = tk.Frame(paned, bg="white")
+        tk.Label(tweaks_frame, text="Tweaks", font=("Segoe UI", 8, "bold"), bg="white", fg="black", anchor="w").pack(
+            fill="x", padx=8, pady=(6, 2)
+        )
+
+        grid = tk.Frame(tweaks_frame, bg="white")
+        grid.pack(fill="both", expand=True, padx=6, pady=2)
+
+        # Determine how many item-columns to use based on screen width
+        try:
+            screen_w = int(self.root.winfo_screenwidth())
+        except Exception:
+            screen_w = 1920
+        item_cols = 5 if screen_w >= 1900 else (4 if screen_w >= 1600 else 3)
+        item_cols = max(2, min(5, item_cols))
+
+        # Each item uses 2 grid columns: checkbox + risk label
+        for c in range(item_cols * 2):
+            grid.grid_columnconfigure(c, weight=1)
+
+        def risk_to_color(risk_tuple):
+            try:
+                return risk_tuple[1]
+            except Exception:
+                return "black"
+
+        def risk_to_text(risk_tuple):
+            try:
+                return risk_tuple[0]
+            except Exception:
+                return ""
+
+        r = 0
+        for cat_name, cat_data in CATEGORIES.items():
+            # Category header spans full width
+            hdr = tk.Label(grid, text=cat_name, font=("Segoe UI", 6, "bold"), bg="white", fg="black", anchor="w")
+            hdr.grid(row=r, column=0, columnspan=item_cols * 2, sticky="w", padx=2, pady=(3, 0))
+            r += 1
+
+            c_group = 0
+            for tw in cat_data["tweaks"]:
+                var = tk.BooleanVar(value=False)
+                self.tweak_vars[tw["name"]] = (var, tw)
+
+                col_base = c_group * 2
+                chk = tk.Checkbutton(
+                    grid,
+                    variable=var,
+                    text=tw["name"],
+                    font=("Segoe UI", 6),
+                    bg="white",
+                    fg="black",
+                    anchor="w",
+                    justify="left",
+                    width=40,
+                    command=self._update_stats,
+                )
+                chk.grid(row=r, column=col_base, sticky="w", padx=(2, 0), pady=0)
+
+                # risk + applied indicator live together in one cell
+                right_cell = tk.Frame(grid, bg="white")
+                right_cell.grid(row=r, column=col_base + 1, sticky="w", padx=(2, 10), pady=0)
+
+                risk_lbl = tk.Label(
+                    right_cell,
+                    text=risk_to_text(tw["risk"]),
+                    font=("Segoe UI", 6, "bold"),
+                    bg="white",
+                    fg=risk_to_color(tw["risk"]),
+                    anchor="w",
+                )
+                risk_lbl.pack(side="left")
+
+                applied_lbl = tk.Label(right_cell, text="", font=("Segoe UI", 6), bg="white", fg="blue", anchor="w")
+                applied_lbl.pack(side="left", padx=(4, 0))
+                self.tweak_applied_lbls[tw["name"]] = applied_lbl
+
+                c_group += 1
+                if c_group >= item_cols:
+                    c_group = 0
+                    r += 1
+
+            if c_group != 0:
+                r += 1
+
+        paned.add(specs_frame, minsize=340)
+        paned.add(tweaks_frame, minsize=520)
+
+        # ── Bottom controls (basic) ─────────────────────────────────
+        bottom = tk.Frame(self.root, bg="white")
+        bottom.pack(fill="x")
+
+        self.stats_lbl = tk.Label(bottom, text="0 / 0 tweaks selected", font=("Segoe UI", 8), bg="white", fg="black")
+        self.stats_lbl.pack(side="left", padx=8, pady=4)
+
+        tk.Button(bottom, text="Select All", font=("Segoe UI", 8), command=self._select_all).pack(side="left", padx=4, pady=3)
+        tk.Button(bottom, text="Deselect All", font=("Segoe UI", 8), command=self._deselect_all).pack(side="left", padx=4, pady=3)
+        tk.Button(bottom, text="Apply Selected", font=("Segoe UI", 8), command=self._apply).pack(side="right", padx=8, pady=3)
+
+        self._update_stats()
 
     def _scan_applied_tweaks(self):
         for cat_name, cat_data in CATEGORIES.items():
@@ -1404,7 +1554,7 @@ class OptimizerApp:
         if tweak_name in self.tweak_vars:
             self.tweak_vars[tweak_name][0].set(True)
             if tweak_name in self.tweak_applied_lbls:
-                self.tweak_applied_lbls[tweak_name].configure(text="[ALREADY APPLIED]")
+                self.tweak_applied_lbls[tweak_name].configure(text="APPLIED")
             for draw_func in self.chk_draw_funcs:
                 draw_func()
             self._update_stats()
@@ -1576,31 +1726,24 @@ class OptimizerApp:
         try:
             # UI Overlay for progress
             progress_win = tk.Toplevel(self.root)
-            progress_win.title("Direct Patching...")
-            progress_win.geometry("380x150")
-            progress_win.configure(bg="#080808", highlightthickness=1, highlightbackground=ACCENT)
+            progress_win.title("Updating...")
+            progress_win.geometry("380x120")
+            progress_win.configure(bg="white")
             progress_win.attributes("-topmost", True)
             progress_win.overrideredirect(True)
             
             # Center of the screen
-            w, h = 380, 150
+            w, h = 380, 120
             x = (progress_win.winfo_screenwidth() // 2) - (w // 2)
             y = (progress_win.winfo_screenheight() // 2) - (h // 2)
             progress_win.geometry(f"{w}x{h}+{x}+{y}")
 
-            tk.Label(progress_win, text="\U0001F504 PATCHING SYSTEM", font=("Arial", 12, "bold"), bg="#080808", fg=ACCENT).pack(pady=(20, 5))
-            status_lbl = tk.Label(progress_win, text="Initializing secure download...", font=("Arial", 9), bg="#080808", fg=TEXT_DIM)
+            tk.Label(progress_win, text="Updating...", font=("Segoe UI", 10, "bold"), bg="white", fg="black").pack(pady=(18, 6))
+            status_lbl = tk.Label(progress_win, text="Starting download...", font=("Segoe UI", 8), bg="white", fg="black")
             status_lbl.pack()
-            
-            # Progress bar simulation / actual download
-            prog_bar_bg = tk.Frame(progress_win, bg="#1a1a1a", width=300, height=4)
-            prog_bar_bg.pack(pady=15)
-            prog_bar = tk.Frame(prog_bar_bg, bg=ACCENT, width=0, height=4)
-            prog_bar.place(x=0, y=0)
 
             def update_ui(txt, pct):
                 status_lbl.configure(text=txt)
-                prog_bar.configure(width=int(300 * (pct / 100)))
                 progress_win.update()
 
             # Download using chunks for smoother UI
@@ -1622,7 +1765,7 @@ class OptimizerApp:
                             percent = (downloaded / total_size) * 100
                             update_ui(f"Downloading core patches... {int(percent)}%", percent)
 
-            update_ui("Applying patches to core files...", 100)
+            update_ui("Applying update...", 100)
             time.sleep(1)
 
             # --- Hot Swap Logic ---
@@ -1667,6 +1810,19 @@ del "%~f0"
     # ── Music ────────────────────────────────────────────────────────
     def _play_music(self):
         self.music_error = None
+        # Music is optional; keep it off the critical path.
+        global pygame
+        if pygame is None:
+            try:
+                import pygame as _pygame
+                pygame = _pygame
+            except Exception:
+                self.music_error = "pygame not available"
+                try:
+                    self.music_btn.configure(text="Music: N/A")
+                except Exception:
+                    pass
+                return
         try:
             pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
             
@@ -1683,166 +1839,42 @@ del "%~f0"
             if not os.path.exists(mp3):
                 self.music_error = f"MP3 file not found:\n{mp3}"
                 print(self.music_error)
-                self.music_btn.configure(text="🔇", fg=RED)
+                try:
+                    self.music_btn.configure(text="Music: N/A")
+                except Exception:
+                    pass
                 return
             
             file_size = os.path.getsize(mp3)
             if file_size < 1000:  # Really small files are likely placeholders
                 self.music_error = f"MP3 placeholder (only {file_size} bytes). Replace with real audio file."
                 print(self.music_error)
-                self.music_btn.configure(text="⚠", fg=ORANGE)
+                try:
+                    self.music_btn.configure(text="Music: N/A")
+                except Exception:
+                    pass
                 return
             
             pygame.mixer.music.load(mp3)
             pygame.mixer.music.set_volume(0.35)
             pygame.mixer.music.play(-1)
             print(f"✓ Music loaded and playing: {mp3}")
+            try:
+                self.music_btn.configure(text="Music: ON")
+            except Exception:
+                pass
         except Exception as e:
             self.music_error = f"Music error: {str(e)}"
             print(self.music_error)
-            self.music_btn.configure(text="🔇", fg=RED)
+            try:
+                self.music_btn.configure(text="Music: N/A")
+            except Exception:
+                pass
 
     # ── Build Layout ─────────────────────────────────────────────────
     def _build_ui(self):
-        # ── Top Bar ──────────────────────────────────────────────────
-        topbar = tk.Frame(self.root, bg=BG, height=52)
-        topbar.pack(fill="x")
-        topbar.pack_propagate(False)
-
-        tk.Label(topbar, text="Tools by Blandy", font=("Consolas", 15, "bold"),
-                 bg=BG, fg=ACCENT).pack(side="left", padx=20, pady=12)
-        tk.Label(topbar, text="PC Optimizer",
-                 font=("Consolas", 9), bg=BG, fg=TEXT_DIM).pack(side="left", pady=12)
-
-        self.music_on = True
-        self.music_btn = tk.Label(topbar, text="\U0001F50A", font=("Arial", 13),
-                                   bg=BG, fg=TEXT_DIM, cursor="hand2")
-        self.music_btn.pack(side="right", padx=16)
-        self.music_btn.bind("<Button-1>", self._toggle_music)
-        self.music_btn.bind("<Enter>", lambda e: self._show_music_status())
-        self.music_btn.bind("<Leave>", lambda e: self._hide_tooltip())
-
-        tk.Frame(self.root, bg=BORDER, height=1).pack(fill="x")
-
-        # ── Body ─────────────────────────────────────────────────────
-        body = tk.Frame(self.root, bg=BG)
-        body.pack(fill="both", expand=True)
-
-        # Sidebar
-        self.sidebar = tk.Frame(body, bg=SIDEBAR_BG, width=210)
-        self.sidebar.pack(side="left", fill="y")
-        self.sidebar.pack_propagate(False)
-
-        tk.Label(self.sidebar, text="menu", font=("Consolas", 8),
-                 bg=SIDEBAR_BG, fg=TEXT_DARK, anchor="w").pack(fill="x", padx=16, pady=(16, 4))
-
-        # Special "My PC" tab at the top
-        self.pc_btn = tk.Label(
-            self.sidebar,
-            text="  🖥  My PC",
-            font=("Consolas", 10),
-            bg=SIDEBAR_BG, fg=TEXT_DIM,
-            anchor="w", cursor="hand2",
-            padx=12, pady=8,
-        )
-        self.pc_btn.pack(fill="x")
-        self.pc_btn.bind("<Button-1>", lambda e: self._show_specs_page())
-        self.pc_btn.bind("<Enter>", lambda e: self.pc_btn.configure(bg=BG_HOVER) if self.active_cat != "__specs__" else None)
-        self.pc_btn.bind("<Leave>", lambda e: self.pc_btn.configure(bg=SIDEBAR_BG) if self.active_cat != "__specs__" else None)
-
-        # Divider text
-        tk.Label(self.sidebar, text="tweaks", font=("Consolas", 8),
-                 bg=SIDEBAR_BG, fg=TEXT_DARK, anchor="w").pack(fill="x", padx=16, pady=(10, 2))
-
-        for cat_name, cat_data in CATEGORIES.items():
-            btn = tk.Label(
-                self.sidebar,
-                text=f"  {cat_data['icon']}  {cat_name}",
-                font=("Consolas", 9),
-                bg=SIDEBAR_BG, fg=TEXT_DIM,
-                anchor="w", cursor="hand2",
-                padx=12, pady=7,
-            )
-            btn.pack(fill="x")
-            btn.bind("<Button-1>", lambda e, c=cat_name: self._show_category(c))
-            btn.bind("<Enter>", lambda e, b=btn: b.configure(bg=BG_HOVER) if b != self.cat_btns.get(self.active_cat) else None)
-            btn.bind("<Leave>", lambda e, b=btn: b.configure(bg=SIDEBAR_BG) if b != self.cat_btns.get(self.active_cat) else None)
-            self.cat_btns[cat_name] = btn
-
-        tk.Frame(body, bg=BORDER, width=1).pack(side="left", fill="y")
-
-        # Content area
-        self.content_wrap = tk.Frame(body, bg=BG)
-        self.content_wrap.pack(side="left", fill="both", expand=True)
-
-        # Category header
-        self.cat_header = tk.Label(self.content_wrap, text="", font=("Arial", 14, "bold"),
-                                    bg=BG, fg=TEXT, anchor="w")
-        self.cat_header.pack(fill="x", padx=28, pady=(20, 4))
-
-        self.cat_count = tk.Label(self.content_wrap, text="", font=("Arial", 9),
-                                   bg=BG, fg=TEXT_DIM, anchor="w")
-        self.cat_count.pack(fill="x", padx=28, pady=(0, 10))
-
-        # Scrollable tweaks container
-        self.scroll_canvas = tk.Canvas(self.content_wrap, bg=BG, highlightthickness=0, bd=0)
-        self.scroll_canvas.pack(fill="both", expand=True, padx=4)
-
-        self.scroll_inner = tk.Frame(self.scroll_canvas, bg=BG)
-        self.scroll_win = self.scroll_canvas.create_window((0, 0), window=self.scroll_inner, anchor="nw")
-
-        self.scroll_inner.bind("<Configure>", lambda e: self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all")))
-        self.scroll_canvas.bind("<Configure>", lambda e: self.scroll_canvas.itemconfig(self.scroll_win, width=e.width))
-
-        # Mouse wheel scrolling
-        self.scroll_canvas.bind("<Enter>", lambda e: self._bind_mousewheel())
-        self.scroll_canvas.bind("<Leave>", lambda e: self._unbind_mousewheel())
-
-        # ── Bottom Bar ───────────────────────────────────────────────
-        tk.Frame(self.root, bg=BORDER, height=1).pack(fill="x")
-        bottom = tk.Frame(self.root, bg=BG_CARD, height=62)
-        bottom.pack(fill="x")
-        bottom.pack_propagate(False)
-
-        # Stats
-        self.stats_lbl = tk.Label(bottom, text="0 tweaks selected", font=("Arial", 9),
-                                   bg=BG_CARD, fg=TEXT_DIM)
-        self.stats_lbl.pack(side="left", padx=22, pady=18)
-
-        # Select All button
-        sa = tk.Label(bottom, text="  SELECT ALL  ", font=("Arial", 9, "bold"),
-                      bg=BG_CARD, fg=ACCENT, cursor="hand2")
-        sa.pack(side="left", padx=6)
-        sa.bind("<Button-1>", self._select_all)
-        sa.bind("<Enter>", lambda e: sa.configure(fg=ACCENT_GLOW))
-        sa.bind("<Leave>", lambda e: sa.configure(fg=ACCENT))
-
-        # Deselect All
-        da = tk.Label(bottom, text="  DESELECT ALL  ", font=("Arial", 9, "bold"),
-                      bg=BG_CARD, fg=TEXT_DIM, cursor="hand2")
-        da.pack(side="left", padx=6)
-        da.bind("<Button-1>", self._deselect_all)
-
-        # Apply button
-        self.apply_btn = tk.Canvas(bottom, width=180, height=38, bg=BG_CARD,
-                                    highlightthickness=0, bd=0, cursor="hand2")
-        self.apply_btn.pack(side="right", padx=22, pady=12)
-        self._draw_apply_btn(ACCENT)
-        self.apply_btn.bind("<Enter>", lambda e: self._draw_apply_btn(ACCENT_GLOW))
-        self.apply_btn.bind("<Leave>", lambda e: self._draw_apply_btn(ACCENT))
-        self.apply_btn.bind("<Button-1>", lambda e: self._apply())
-
-        # Build all category content frames (hidden)
-        for cat_name, cat_data in CATEGORIES.items():
-            frame = tk.Frame(self.scroll_inner, bg=BG)
-            for tw in cat_data["tweaks"]:
-                self._build_tweak_card(frame, tw)
-            self.cat_frames[cat_name] = frame
-
-        # Specs page frame (lives inside scroll_inner alongside category frames)
-        self.specs_page_frame = tk.Frame(self.scroll_inner, bg=BG)
-        self._build_specs_page(self.specs_page_frame)
-        threading.Thread(target=self._load_specs, daemon=True).start()
+        # Kept for backward compatibility; the app now uses _build_ui_basic().
+        self._build_ui_basic()
 
     def _draw_apply_btn(self, color):
         c = self.apply_btn
@@ -1887,12 +1919,6 @@ del "%~f0"
         )
         self.specs_text.pack(fill="both", expand=True)
 
-        # Tag styles
-        self.specs_text.tag_configure("header", font=("Consolas", 11, "bold"), foreground=ACCENT, spacing1=14, spacing3=2)
-        self.specs_text.tag_configure("val", font=("Consolas", 10), foreground=TEXT)
-        self.specs_text.tag_configure("label", font=("Consolas", 10), foreground=TEXT_DIM)
-        self.specs_text.tag_configure("dim", font=("Consolas", 9), foreground=TEXT_DARK)
-
         self._set_specs_text("loading...")
 
     def _set_specs_text(self, raw):
@@ -1900,22 +1926,11 @@ del "%~f0"
         t.config(state="normal")
         t.delete("1.0", "end")
         if raw == "loading...":
-            t.insert("end", "gathering info, give it a sec...\n", "dim")
+            t.insert("end", "gathering info, give it a sec...\n")
         else:
+            # Plain text only (no tag styling)
             for line in raw.split("\n"):
-                line = line.rstrip()
-                if not line:
-                    t.insert("end", "\n")
-                elif line.startswith("##"):
-                    t.insert("end", "\n" + line[2:].strip() + "\n", "header")
-                elif ":" in line:
-                    idx = line.index(":")
-                    lbl = line[:idx + 1]
-                    val = line[idx + 1:]
-                    t.insert("end", f"  {lbl}", "label")
-                    t.insert("end", f"{val}\n", "val")
-                else:
-                    t.insert("end", f"  {line}\n", "val")
+                t.insert("end", line.rstrip() + "\n")
         t.config(state="disabled")
 
     def _load_specs(self):
@@ -1923,119 +1938,96 @@ del "%~f0"
             cmd = r'''
 $ErrorActionPreference = "SilentlyContinue"
 
-## Operating System
 $os  = Get-CimInstance Win32_OperatingSystem
 $cs  = Get-CimInstance Win32_ComputerSystem
-Write-Output ("## Operating System")
-Write-Output ("Name: " + $os.Caption)
-Write-Output ("Build: " + $os.BuildNumber + "  (" + $os.Version + ")")
-Write-Output ("Architecture: " + $os.OSArchitecture)
-Write-Output ("Install Date: " + $os.InstallDate.ToString("yyyy-MM-dd"))
-Write-Output ("Last Boot: " + $os.LastBootUpTime.ToString("yyyy-MM-dd  HH:mm"))
-Write-Output ("Hostname: " + $env:COMPUTERNAME)
-Write-Output ("User: " + $env:USERNAME)
-Write-Output ""
-
-## CPU
 $cpu = Get-CimInstance Win32_Processor
-Write-Output "## CPU"
-Write-Output ("Name: " + $cpu.Name.Trim())
-Write-Output ("Cores: " + $cpu.NumberOfCores + "  /  Threads: " + $cpu.NumberOfLogicalProcessors)
-Write-Output ("Base Clock: " + $cpu.MaxClockSpeed + " MHz")
-Write-Output ("L2 Cache: " + [math]::Round($cpu.L2CacheSize / 1024, 1) + " MB  /  L3 Cache: " + [math]::Round($cpu.L3CacheSize / 1024, 1) + " MB")
-Write-Output ("Socket: " + $cpu.SocketDesignation)
-Write-Output ("Architecture: " + $cpu.Architecture)
+
+Write-Output ("OS: " + $os.Caption + " | Build " + $os.BuildNumber + " (" + $os.Version + ") | " + $os.OSArchitecture)
+Write-Output ("Install: " + $os.InstallDate.ToString("yyyy-MM-dd") + " | Boot: " + $os.LastBootUpTime.ToString("yyyy-MM-dd HH:mm"))
+Write-Output ("Host: " + $env:COMPUTERNAME + " | User: " + $env:USERNAME)
+Write-Output ("Model: " + $cs.Manufacturer + " " + $cs.Model)
 Write-Output ""
 
-## Memory
-Write-Output "## Memory"
+Write-Output ("CPU: " + $cpu.Name.Trim())
+Write-Output ("Cores/Threads: " + $cpu.NumberOfCores + "/" + $cpu.NumberOfLogicalProcessors + " | Base: " + $cpu.MaxClockSpeed + " MHz | Socket: " + $cpu.SocketDesignation)
+Write-Output ("Cache: L2 " + [math]::Round($cpu.L2CacheSize / 1024, 1) + " MB | L3 " + [math]::Round($cpu.L3CacheSize / 1024, 1) + " MB")
+Write-Output ""
+
 $ramTotal = [math]::Round($cs.TotalPhysicalMemory / 1GB, 2)
-Write-Output ("Total RAM: " + $ramTotal + " GB")
+Write-Output ("RAM: " + $ramTotal + " GB")
 $sticks = Get-CimInstance Win32_PhysicalMemory
+$stickLines = @()
 foreach ($s in $sticks) {
     $cap  = [math]::Round($s.Capacity / 1GB, 0)
     $spd  = $s.ConfiguredClockSpeed
-    $type = switch ($s.MemoryType) { 20 {"DDR"} 21 {"DDR2"} 24 {"DDR3"} 26 {"DDR4"} 34 {"DDR5"} default {"DDR ($($s.MemoryType))"}}
-    Write-Output ("  Slot " + $s.DeviceLocator + ":  " + $cap + " GB  " + $type + "  @ " + $spd + " MHz  —  " + $s.Manufacturer.Trim())
+    $type = switch ($s.MemoryType) { 20 {"DDR"} 21 {"DDR2"} 24 {"DDR3"} 26 {"DDR4"} 34 {"DDR5"} default {"DDR"}}
+    $stickLines += ($s.DeviceLocator + ":" + $cap + "GB " + $type + "@" + $spd + "MHz")
+}
+if ($stickLines.Count -gt 0) { Write-Output ("Sticks: " + ($stickLines -join " | ")) }
+Write-Output ""
+
+$gpus = Get-CimInstance Win32_VideoController
+foreach ($g in $gpus) {
+    $vram = ""
+    if ($g.AdapterRAM -gt 0) { $vram = (" | VRAM " + [math]::Round($g.AdapterRAM / 1GB, 1) + " GB") }
+    $res = ""
+    if ($g.CurrentHorizontalResolution -gt 0) { $res = (" | " + $g.CurrentHorizontalResolution + "x" + $g.CurrentVerticalResolution + "@" + $g.CurrentRefreshRate + "Hz") }
+    Write-Output ("GPU: " + $g.Name + $vram + " | Driver " + $g.DriverVersion + " (" + $g.DriverDate.ToString("yyyy-MM-dd") + ")" + $res)
 }
 Write-Output ""
 
-## GPU
-Write-Output "## GPU"
-$gpus = Get-CimInstance Win32_VideoController
-foreach ($g in $gpus) {
-    Write-Output ("Name: " + $g.Name)
-    if ($g.AdapterRAM -gt 0) { Write-Output ("VRAM: " + [math]::Round($g.AdapterRAM / 1GB, 1) + " GB") }
-    Write-Output ("Driver: " + $g.DriverVersion + "  (" + $g.DriverDate.ToString("yyyy-MM-dd") + ")")
-    Write-Output ("Resolution: " + $g.CurrentHorizontalResolution + " x " + $g.CurrentVerticalResolution + "  @ " + $g.CurrentRefreshRate + " Hz")
-    Write-Output ""
-}
-
-## Storage
-Write-Output "## Storage"
 $disks = Get-CimInstance Win32_DiskDrive
-foreach ($d in $disks) {
-    $size = [math]::Round($d.Size / 1GB, 0)
-    Write-Output ("  " + $d.Model + "  —  " + $size + " GB  (" + $d.InterfaceType + ")")
-}
+$diskLines = @()
+foreach ($d in $disks) { $diskLines += ($d.Model + " " + [math]::Round($d.Size / 1GB, 0) + "GB " + $d.InterfaceType) }
+if ($diskLines.Count -gt 0) { Write-Output ("Disks: " + ($diskLines -join " | ")) }
+
 $vols = Get-CimInstance Win32_LogicalDisk | Where-Object { $_.DriveType -eq 3 }
+$volLines = @()
 foreach ($v in $vols) {
     $free = [math]::Round($v.FreeSpace / 1GB, 1)
     $tot  = [math]::Round($v.Size / 1GB, 1)
-    Write-Output ("  " + $v.DeviceID + "  " + $free + " GB free / " + $tot + " GB total")
+    $volLines += ($v.DeviceID + " " + $free + "/" + $tot + "GB free")
 }
+if ($volLines.Count -gt 0) { Write-Output ("Volumes: " + ($volLines -join " | ")) }
 Write-Output ""
 
-## Motherboard
-Write-Output "## Motherboard"
 $mb = Get-CimInstance Win32_BaseBoard
-Write-Output ("Name: " + $mb.Manufacturer + "  " + $mb.Product)
-Write-Output ("Serial: " + $mb.SerialNumber)
 $bios = Get-CimInstance Win32_BIOS
-Write-Output ("BIOS: " + $bios.Manufacturer + "  " + $bios.SMBIOSBIOSVersion + "  (" + $bios.ReleaseDate.ToString("yyyy-MM-dd") + ")")
+Write-Output ("Board: " + $mb.Manufacturer + " " + $mb.Product + " | BIOS " + $bios.SMBIOSBIOSVersion + " (" + $bios.ReleaseDate.ToString("yyyy-MM-dd") + ")")
 Write-Output ""
 
-## Network
-Write-Output "## Network"
 $nics = Get-CimInstance Win32_NetworkAdapter | Where-Object { $_.PhysicalAdapter -eq $true }
 foreach ($n in $nics) {
-    Write-Output ("  " + $n.Name)
     $cfg = Get-CimInstance Win32_NetworkAdapterConfiguration | Where-Object { $_.Index -eq $n.DeviceID }
-    if ($cfg.IPAddress) { Write-Output ("    IP: " + ($cfg.IPAddress -join ",  ")) }
-    if ($cfg.MACAddress) { Write-Output ("    MAC: " + $cfg.MACAddress) }
+    $ip = ""
+    if ($cfg.IPAddress) { $ip = ($cfg.IPAddress -join ",") }
+    $mac = ""
+    if ($cfg.MACAddress) { $mac = $cfg.MACAddress }
+    Write-Output ("NIC: " + $n.Name + " | IP " + $ip + " | MAC " + $mac)
 }
 Write-Output ""
 
-## Audio
-Write-Output "## Audio"
 $audio = Get-CimInstance Win32_SoundDevice
-foreach ($a in $audio) {
-    Write-Output ("  " + $a.Name)
-}
-Write-Output ""
+$aLines = @()
+foreach ($a in $audio) { $aLines += $a.Name }
+if ($aLines.Count -gt 0) { Write-Output ("Audio: " + ($aLines -join " | ")) }
 
-## Monitors
-Write-Output "## Monitors"
 $monitors = Get-CimInstance WmiMonitorID -Namespace root\wmi -ErrorAction SilentlyContinue
+$mLines = @()
 if ($monitors) {
     foreach ($m in $monitors) {
         $name = [System.Text.Encoding]::ASCII.GetString($m.UserFriendlyName -ne 0).Trim()
-        Write-Output ("  " + $name)
+        if ($name) { $mLines += $name }
     }
-} else {
-    Write-Output "  (could not read monitor info)"
 }
-Write-Output ""
+if ($mLines.Count -gt 0) { Write-Output ("Monitors: " + ($mLines -join " | ")) }
 
-## Power / Battery
-Write-Output "## Power"
 $batt = Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue
 if ($batt) {
-    Write-Output ("Battery: " + $batt.EstimatedChargeRemaining + "%  —  " + $batt.Name)
-    $status = switch ($batt.BatteryStatus) { 1 {"Discharging"} 2 {"AC, Full"} 3 {"Fully Charged"} default {"Unknown"}}
-    Write-Output ("Status: " + $status)
+    $status = switch ($batt.BatteryStatus) { 1 {"Discharging"} 2 {"AC"} 3 {"Full"} default {"Unknown"}}
+    Write-Output ("Power: Battery " + $batt.EstimatedChargeRemaining + "% (" + $status + ")")
 } else {
-    Write-Output "  No battery (desktop)"
+    Write-Output "Power: No battery"
 }
 '''
             output = subprocess.check_output(
@@ -2262,23 +2254,30 @@ if ($batt) {
         self.tooltip_win = tw
 
     def _toggle_music(self, e=None):
+        # Works with both event binding and Button command
         if self.music_error:
-            messagebox.showinfo("Music Error", self.music_error + "\n\nReplace the placeholder MP3 with a real audio file.")
+            messagebox.showinfo("Music", self.music_error)
             return
-        
+
         self.music_on = not self.music_on
-        if self.music_on:
+        if pygame is None:
+            self.music_on = False
+            self.music_error = "pygame not available"
             try:
+                self.music_btn.configure(text="Music: N/A")
+            except Exception:
+                pass
+            return
+
+        try:
+            if self.music_on:
                 pygame.mixer.music.unpause()
-                self.music_btn.configure(text="\U0001F50A", fg=TEXT_DIM)
-            except:
-                pass
-        else:
-            try:
+                self.music_btn.configure(text="Music: ON")
+            else:
                 pygame.mixer.music.pause()
-                self.music_btn.configure(text="\U0001F507", fg=TEXT_DIM)
-            except:
-                pass
+                self.music_btn.configure(text="Music: OFF")
+        except Exception:
+            pass
 
     # ── Apply Logic ──────────────────────────────────────────────────
     def _apply(self):
