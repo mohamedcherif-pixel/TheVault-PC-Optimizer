@@ -3,6 +3,9 @@ import tkinter as tk
 from tkinter import messagebox
 import urllib.request
 import json
+import winreg
+import shlex
+import re
 
 # ─── App Version ────────────────────────────────────────────────────────
 APP_VERSION = "v1.0.6"
@@ -1371,6 +1374,7 @@ class OptimizerApp:
 
         # Track tweak state
         self.tweak_vars = {}   # tweak_name -> (BooleanVar, tweak_dict)
+        self.tweak_applied_lbls = {} # tweak_name -> Label
         self.cat_frames = {}   # cat_name -> content frame
         self.cat_btns = {}     # cat_name -> sidebar button
         self.active_cat = None
@@ -1385,6 +1389,160 @@ class OptimizerApp:
         
         # Check for updates in background
         threading.Thread(target=self._check_for_updates, daemon=True).start()
+        
+        # Scan for already applied tweaks
+        threading.Thread(target=self._scan_applied_tweaks, daemon=True).start()
+
+    def _scan_applied_tweaks(self):
+        for cat_name, cat_data in CATEGORIES.items():
+            for tweak in cat_data["tweaks"]:
+                if self._is_tweak_applied(tweak["cmds"]):
+                    self.root.after(0, self._set_tweak_checked, tweak["name"])
+
+    def _set_tweak_checked(self, tweak_name):
+        if tweak_name in self.tweak_vars:
+            self.tweak_vars[tweak_name][0].set(True)
+            if tweak_name in self.tweak_applied_lbls:
+                self.tweak_applied_lbls[tweak_name].configure(text="[ALREADY APPLIED]")
+            for draw_func in self.chk_draw_funcs:
+                draw_func()
+            self._update_stats()
+
+    def _is_tweak_applied(self, cmds):
+        verifiable_cmds = 0
+        applied_cmds = 0
+
+        for cmd in cmds:
+            cmd_lower = cmd.lower()
+            
+            # 1. Check Registry
+            if cmd_lower.startswith('reg add'):
+                try:
+                    parts = shlex.split(cmd, posix=False)
+                    # Remove surrounding quotes from parts
+                    parts = [p.strip('"') for p in parts]
+                    
+                    if 'add' not in [p.lower() for p in parts]: continue
+                    
+                    key_path = parts[2]
+                    
+                    value_name = ""
+                    if '/v' in parts:
+                        value_name = parts[parts.index('/v') + 1]
+                    elif '/ve' in parts:
+                        value_name = ""
+                        
+                    reg_type = ""
+                    if '/t' in parts:
+                        reg_type = parts[parts.index('/t') + 1]
+                        
+                    expected_data = ""
+                    if '/d' in parts:
+                        expected_data = parts[parts.index('/d') + 1]
+                        
+                    hkey_map = {
+                        "HKLM": winreg.HKEY_LOCAL_MACHINE,
+                        "HKEY_LOCAL_MACHINE": winreg.HKEY_LOCAL_MACHINE,
+                        "HKCU": winreg.HKEY_CURRENT_USER,
+                        "HKEY_CURRENT_USER": winreg.HKEY_CURRENT_USER,
+                        "HKCR": winreg.HKEY_CLASSES_ROOT,
+                        "HKU": winreg.HKEY_USERS
+                    }
+                    
+                    key_parts = key_path.split('\\', 1)
+                    if len(key_parts) != 2: continue
+                    hkey_str, subkey = key_parts
+                    hkey = hkey_map.get(hkey_str.upper())
+                    if not hkey: continue
+                    
+                    verifiable_cmds += 1
+                    try:
+                        with winreg.OpenKey(hkey, subkey) as key:
+                            val, typ = winreg.QueryValueEx(key, value_name)
+                            
+                            is_match = False
+                            if reg_type == "REG_DWORD":
+                                is_match = (int(val) == int(expected_data))
+                            elif reg_type in ("REG_SZ", "REG_EXPAND_SZ"):
+                                is_match = (str(val) == str(expected_data))
+                            elif reg_type == "REG_BINARY":
+                                is_match = (val.hex().upper() == expected_data.upper())
+                            
+                            if is_match:
+                                applied_cmds += 1
+                    except FileNotFoundError:
+                        pass
+                    except Exception:
+                        pass
+                except Exception:
+                    pass
+
+            # 2. Check Services
+            elif cmd_lower.startswith('sc config'):
+                match = re.search(r'sc config (.*?) start=disabled', cmd, re.IGNORECASE)
+                if match:
+                    service_name = match.group(1).strip('"')
+                    verifiable_cmds += 1
+                    try:
+                        output = subprocess.check_output(f'sc.exe qc "{service_name}"', shell=True, text=True, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+                        if "START_TYPE" in output and "4" in output: # 4 is DISABLED
+                            applied_cmds += 1
+                    except subprocess.CalledProcessError:
+                        # Service doesn't exist -> effectively disabled
+                        applied_cmds += 1
+
+            # 3. Check Scheduled Tasks
+            elif cmd_lower.startswith('schtasks /change'):
+                match = re.search(r'schtasks /Change /TN "(.*?)" /Disable', cmd, re.IGNORECASE)
+                if match:
+                    task_name = match.group(1)
+                    verifiable_cmds += 1
+                    try:
+                        output = subprocess.check_output(f'schtasks /Query /TN "{task_name}" /FO LIST', shell=True, text=True, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+                        if "Disabled" in output:
+                            applied_cmds += 1
+                    except subprocess.CalledProcessError:
+                        # Task doesn't exist -> effectively disabled
+                        applied_cmds += 1
+
+            # 4. Check fsutil
+            elif cmd_lower.startswith('fsutil behavior set'):
+                try:
+                    parts = shlex.split(cmd, posix=False)
+                    parts = [p.strip('"') for p in parts]
+                    if len(parts) >= 5:
+                        prop = parts[3]
+                        val = parts[4]
+                        verifiable_cmds += 1
+                        output = subprocess.check_output(f'fsutil behavior query {prop}', shell=True, text=True, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+                        if val in output:
+                            applied_cmds += 1
+                except Exception:
+                    pass
+                    
+            # 5. Check powercfg
+            elif cmd_lower.startswith('powercfg /change') or cmd_lower.startswith('powercfg -change'):
+                try:
+                    parts = shlex.split(cmd, posix=False)
+                    parts = [p.strip('"') for p in parts]
+                    if len(parts) >= 4:
+                        setting = parts[2]
+                        val = parts[3]
+                        verifiable_cmds += 1
+                        # This is a simplified check, powercfg querying is complex, 
+                        # but we can try to query the active scheme
+                        output = subprocess.check_output('powercfg /q SCHEME_CURRENT', shell=True, text=True, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+                        # We just assume it's applied if we can't easily verify, or we skip verification
+                        # For now, let's just skip powercfg verification to avoid false negatives
+                        verifiable_cmds -= 1
+                except Exception:
+                    pass
+
+        # If we verified at least one command and ALL verified commands are applied, return True
+        # If there are no verifiable commands, we can't be sure, so return False
+        if verifiable_cmds > 0 and verifiable_cmds == applied_cmds:
+            return True
+        return False
 
     def _check_for_updates(self):
         try:
@@ -1741,8 +1899,13 @@ del "%~f0"
 
         title = tk.Label(chk_row, text=tw["name"], font=("Segoe UI", 11, "bold"),
                          bg=BG_CARD, fg=TEXT, cursor="hand2", anchor="w")
-        title.pack(side="left", fill="x", expand=True)
+        title.pack(side="left")
         title.bind("<Button-1>", toggle)
+
+        applied_lbl = tk.Label(chk_row, text="", font=("Segoe UI", 8, "bold"),
+                               bg=BG_CARD, fg=GREEN)
+        applied_lbl.pack(side="left", padx=10)
+        self.tweak_applied_lbls[tw["name"]] = applied_lbl
 
         desc = tk.Label(left, text=tw["desc"], font=("Segoe UI", 9),
                         bg=BG_CARD, fg=TEXT_DIM, anchor="w", justify="left", wraplength=520)
