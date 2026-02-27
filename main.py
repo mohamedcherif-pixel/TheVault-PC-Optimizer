@@ -8,7 +8,7 @@ import shlex
 import re
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.0.8"
+APP_VERSION = "v1.0.9"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 if not getattr(sys, 'frozen', False):
@@ -1637,8 +1637,10 @@ class OptimizerApp:
             with open(batch_path, "w") as f:
                 f.write(f"""@echo off
 setlocal
-set "_MEIPASS="
-set "PYTHONHOME="
+set _MEIPASS=
+set _MEIPASS2=
+set PYTHONHOME=
+set PYTHONPATH=
 timeout /t 3 /nobreak > nul
 del "{current_exe}.patch_old" 2>nul
 move /y "{current_exe}" "{current_exe}.patch_old"
@@ -1648,10 +1650,14 @@ del "%~f0"
 """)
 
             # Launch patcher and exit
-            subprocess.Popen(["cmd.exe", "/c", batch_path], shell=True, creationflags=subprocess.CREATE_NO_WINDOW)
-            progress_win.destroy()
-            self.root.after(0, self.root.destroy)
-            sys.exit()
+            env = os.environ.copy()
+            env.pop("_MEIPASS", None)
+            env.pop("_MEIPASS2", None)
+            env.pop("PYTHONHOME", None)
+            env.pop("PYTHONPATH", None)
+            
+            subprocess.Popen(["cmd.exe", "/c", batch_path], shell=True, creationflags=subprocess.CREATE_NO_WINDOW, env=env)
+            os._exit(0)
 
         except Exception as e:
             messagebox.showerror("Update Error", f"Patching failed: {e}")
