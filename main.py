@@ -868,8 +868,16 @@ class OptimizerApp:
         self.music_error = None
         try:
             pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
-            here = os.path.dirname(os.path.abspath(__file__))
-            mp3 = os.path.join(here, "Dark Fantasy - shahi77.mp3")
+            
+            # Handle PyInstaller bundled resources
+            if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+                # Running as compiled executable
+                base_path = sys._MEIPASS
+            else:
+                # Running as script
+                base_path = os.path.dirname(os.path.abspath(__file__))
+            
+            mp3 = os.path.join(base_path, "Dark Fantasy - shahi77.mp3")
             
             if not os.path.exists(mp3):
                 self.music_error = f"MP3 file not found:\n{mp3}"
