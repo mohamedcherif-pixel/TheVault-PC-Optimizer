@@ -129,6 +129,74 @@ CATEGORIES = {
                     'powercfg /hibernate off',
                 ],
             },
+            {
+                "name": "Disable Memory Compression",
+                "desc": "Stops Windows from compressing RAM. Reduces CPU overhead and latency when accessing memory, at the cost of slightly higher RAM usage.",
+                "risk": LOW,
+                "cmds": [
+                    'powershell -NoProfile -Command "Disable-MMAgent -mc"',
+                ],
+            },
+            {
+                "name": "Disable Fault Tolerant Heap (FTH)",
+                "desc": "FTH monitors app crashes and applies mitigations that can severely degrade performance of games that crash occasionally.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\FTH" /v "Enabled" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable UAC (User Account Control)",
+                "desc": "Completely disables UAC prompts and virtualization. Removes the secure desktop transition overhead. HIGH RISK for security.",
+                "risk": HIGH,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "EnableLUA" /t REG_DWORD /d 0 /f',
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "ConsentPromptBehaviorAdmin" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable SmartScreen Filter",
+                "desc": "Stops Windows from scanning downloaded files and apps against Microsoft's servers. Reduces launch delays but lowers security.",
+                "risk": HIGH,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v "EnableSmartScreen" /t REG_DWORD /d 0 /f',
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer" /v "SmartScreenEnabled" /t REG_SZ /d "Off" /f',
+                ],
+            },
+            {
+                "name": "Disable Windows Defender (Core)",
+                "desc": "Attempts to disable Windows Defender real-time protection and anti-spyware. Requires Tamper Protection to be off first.",
+                "risk": HIGH,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v "DisableAntiSpyware" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection" /v "DisableRealtimeMonitoring" /t REG_DWORD /d 1 /f',
+                ],
+            },
+            {
+                "name": "Disable DEP (Data Execution Prevention)",
+                "desc": "Disables DEP globally. Removes hardware-level memory execution checks. Extreme security risk, but removes a layer of memory validation.",
+                "risk": HIGH,
+                "cmds": [
+                    'bcdedit /set nx AlwaysOff',
+                ],
+            },
+            {
+                "name": "Disable ASLR (Address Space Layout Randomization)",
+                "desc": "Forces memory to load at predictable addresses. Can slightly improve load times and CPU cache hits. Extreme security risk.",
+                "risk": HIGH,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management" /v "MoveImages" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable System Restore",
+                "desc": "Turns off System Restore entirely. Frees up disk space and removes background snapshotting I/O.",
+                "risk": HIGH,
+                "cmds": [
+                    'powershell -NoProfile -Command "Disable-ComputerRestore -Drive \'C:\\\'"',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\SystemRestore" /v "DisableSR" /t REG_DWORD /d 1 /f',
+                ],
+            },
         ],
     },
     "GPU  &  Gaming": {
@@ -212,6 +280,47 @@ CATEGORIES = {
                     'reg add "HKCU\\System\\GameConfigStore" /v "GameDVR_FSEBehavior" /t REG_DWORD /d 2 /f',
                 ],
             },
+            {
+                "name": "Disable Multi-Plane Overlay (MPO)",
+                "desc": "Fixes stuttering, black screens, and flickering on NVIDIA/AMD GPUs by disabling MPO. Forces standard DWM composition.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm" /v "OverlayTestMode" /t REG_DWORD /d 5 /f',
+                ],
+            },
+            {
+                "name": "Disable Variable Refresh Rate (VRR) Globally",
+                "desc": "Disables Windows-level VRR which can conflict with G-Sync/FreeSync and cause micro-stutters in windowed games.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKCU\\SOFTWARE\\Microsoft\\DirectX\\UserGpuPreferences" /v "DirectXUserGlobalSettings" /t REG_SZ /d "VRROptimizeEnable=0;" /f',
+                ],
+            },
+            {
+                "name": "Disable GPU Energy Driver",
+                "desc": "Disables the GPU Energy Driver service which constantly polls the GPU for power metrics, causing DPC latency spikes.",
+                "risk": LOW,
+                "cmds": [
+                    'sc stop gpuenergydrv',
+                    'sc config gpuenergydrv start=disabled',
+                ],
+            },
+            {
+                "name": "Disable Xbox Game Monitoring",
+                "desc": "Stops the Xbox Game Monitoring service from hooking into game processes to track playtime and stats.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\xbgm" /v "Start" /t REG_DWORD /d 4 /f',
+                ],
+            },
+            {
+                "name": "Disable Game Bar Presence Writer",
+                "desc": "Prevents the Game Bar from writing presence data to the registry every time a game is launched.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "PresenceWriterEnabled" /t REG_DWORD /d 0 /f',
+                ],
+            },
         ],
     },
     "Timer  &  Clock": {
@@ -256,6 +365,15 @@ CATEGORIES = {
                 "risk": SAFE,
                 "cmds": [
                     'bcdedit /timeout 0',
+                ],
+            },
+            {
+                "name": "Disable Synthetic Timers",
+                "desc": "Disables synthetic timers in BCD. Forces the OS to rely strictly on hardware timers, reducing virtualization overhead.",
+                "risk": LOW,
+                "cmds": [
+                    'bcdedit /set useplatformtick yes',
+                    'bcdedit /set useplatformclock false',
                 ],
             },
         ],
@@ -362,6 +480,55 @@ CATEGORIES = {
                     'powershell -NoProfile -Command "Get-NetAdapter | ForEach-Object { Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName \'Energy-Efficient Ethernet\' -DisplayValue \'Disabled\' -EA SilentlyContinue; Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName \'Energy Efficient Ethernet\' -DisplayValue \'Disabled\' -EA SilentlyContinue; Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName \'EEE\' -DisplayValue \'Disabled\' -EA SilentlyContinue }"',
                 ],
             },
+            {
+                "name": "Disable IPv6 Completely",
+                "desc": "Disables the IPv6 stack. If your ISP or game doesn't require IPv6, this removes a massive amount of background network polling.",
+                "risk": MEDIUM,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters" /v "DisabledComponents" /t REG_DWORD /d 255 /f',
+                ],
+            },
+            {
+                "name": "Disable QoS Packet Scheduler",
+                "desc": "Stops Windows from reserving 20% of your bandwidth for Windows Updates and telemetry.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Psched" /v "NonBestEffortLimit" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Receive Segment Coalescing (RSC)",
+                "desc": "RSC batches incoming packets. Good for throughput, terrible for latency. Disabling it forces immediate packet processing.",
+                "risk": SAFE,
+                "cmds": [
+                    'netsh int tcp set global rsc=disabled',
+                    'powershell -NoProfile -Command "Get-NetAdapter | Disable-NetAdapterRsc -EA SilentlyContinue"',
+                ],
+            },
+            {
+                "name": "Disable NetBIOS over TCP/IP",
+                "desc": "Disables legacy local network discovery protocols that constantly broadcast packets on your LAN.",
+                "risk": SAFE,
+                "cmds": [
+                    'powershell -NoProfile -Command "Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object { $_.IPEnabled -eq $true } | ForEach-Object { $_.SetTcpipNetbios(2) }"',
+                ],
+            },
+            {
+                "name": "Disable LLMNR (Link-Local Multicast)",
+                "desc": "Disables LLMNR, another legacy local name resolution protocol that generates unnecessary broadcast traffic.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient" /v "EnableMulticast" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Smart Name Resolution",
+                "desc": "Stops Windows from sending DNS queries to all adapters simultaneously (which leaks DNS queries and wastes bandwidth).",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient" /v "DisableSmartNameResolution" /t REG_DWORD /d 1 /f',
+                ],
+            },
         ],
     },
     "Power  &  CPU": {
@@ -447,6 +614,23 @@ CATEGORIES = {
                     'powercfg /setactive SCHEME_CURRENT',
                 ],
             },
+            {
+                "name": "Disable Sleep & Display Timeout",
+                "desc": "Prevents the PC and display from ever going to sleep automatically.",
+                "risk": SAFE,
+                "cmds": [
+                    'powercfg /change standby-timeout-ac 0',
+                    'powercfg /change monitor-timeout-ac 0',
+                ],
+            },
+            {
+                "name": "Disable Disk Sleep",
+                "desc": "Prevents hard drives from spinning down. Eliminates the 3-5 second freeze when accessing a sleeping drive.",
+                "risk": SAFE,
+                "cmds": [
+                    'powercfg /change disk-timeout-ac 0',
+                ],
+            },
         ],
     },
     "MSI  &  Interrupts": {
@@ -466,6 +650,22 @@ CATEGORIES = {
                 "risk": SAFE,
                 "cmds": [
                     'powershell -NoProfile -Command "Get-PnpDevice -Class USB -Status OK -EA SilentlyContinue | Where-Object {$_.FriendlyName -match \'Host Controller|xHCI|eHCI\'} | ForEach-Object { $bp=\'HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\\'+$_.InstanceId+\'\\Device Parameters\'; Set-ItemProperty -Path $bp -Name \'EnhancedPowerManagementEnabled\' -Value 0 -Type DWord -Force -EA SilentlyContinue; Set-ItemProperty -Path $bp -Name \'SelectiveSuspendEnabled\' -Value 0 -Type DWord -Force -EA SilentlyContinue }"',
+                ],
+            },
+            {
+                "name": "Set GPU MSI Priority to High",
+                "desc": "Forces the GPU's Message Signaled Interrupts to be processed with High priority by the CPU.",
+                "risk": LOW,
+                "cmds": [
+                    'powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-PnpDevice -Class Display -Status OK -EA SilentlyContinue | ForEach-Object { $mp=\'HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\\'+$_.InstanceId+\'\\Device Parameters\\Interrupt Management\\Affinity Policy\'; if(!(Test-Path $mp)){New-Item -Path $mp -Force|Out-Null}; Set-ItemProperty -Path $mp -Name \'DevicePriority\' -Value 3 -Type DWord -Force}"',
+                ],
+            },
+            {
+                "name": "Set NIC MSI Priority to High",
+                "desc": "Forces the Network Adapter's Message Signaled Interrupts to be processed with High priority by the CPU.",
+                "risk": LOW,
+                "cmds": [
+                    'powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-PnpDevice -Class Net -Status OK -EA SilentlyContinue | ForEach-Object { $mp=\'HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\\'+$_.InstanceId+\'\\Device Parameters\\Interrupt Management\\Affinity Policy\'; if(!(Test-Path $mp)){New-Item -Path $mp -Force|Out-Null}; Set-ItemProperty -Path $mp -Name \'DevicePriority\' -Value 3 -Type DWord -Force}"',
                 ],
             },
         ],
@@ -503,6 +703,23 @@ CATEGORIES = {
                 "cmds": [
                     'reg add "HKCU\\Control Panel\\Desktop" /v "MenuShowDelay" /t REG_SZ /d "0" /f',
                     'reg add "HKCU\\Control Panel\\Mouse" /v "MouseHoverTime" /t REG_SZ /d "10" /f',
+                ],
+            },
+            {
+                "name": "Disable Mouse Pointer Shadow",
+                "desc": "Disables the cosmetic drop shadow under the mouse cursor. Saves a tiny amount of GPU rendering overhead.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\Control Panel\\Desktop" /v "UserPreferencesMask" /t REG_BINARY /d 9012078010000000 /f',
+                ],
+            },
+            {
+                "name": "Increase Keyboard Repeat Rate",
+                "desc": "Sets KeyboardDelay=0 and KeyboardSpeed=31. Makes holding down a key register much faster.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\Control Panel\\Keyboard" /v "KeyboardDelay" /t REG_SZ /d "0" /f',
+                    'reg add "HKCU\\Control Panel\\Keyboard" /v "KeyboardSpeed" /t REG_SZ /d "31" /f',
                 ],
             },
         ],
@@ -589,6 +806,44 @@ CATEGORIES = {
                     'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v "AllowCrossDeviceClipboard" /t REG_DWORD /d 0 /f',
                 ],
             },
+            {
+                "name": "Disable Edge Telemetry",
+                "desc": "Disables Microsoft Edge's background data collection and metrics reporting.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge" /v "MetricsReportingEnabled" /t REG_DWORD /d 0 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge" /v "SendSiteInfoToImproveServices" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Office Telemetry",
+                "desc": "Disables telemetry data collection for Microsoft Office applications.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\SOFTWARE\\Policies\\Microsoft\\office\\16.0\\osm" /v "Enablelogging" /t REG_DWORD /d 0 /f',
+                    'reg add "HKCU\\SOFTWARE\\Policies\\Microsoft\\office\\16.0\\osm" /v "EnableUpload" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Visual Studio Telemetry",
+                "desc": "Disables the Customer Experience Improvement Program for Visual Studio.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\VisualStudio\\SQM" /v "OptIn" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable NVIDIA Telemetry",
+                "desc": "Disables NVIDIA's background telemetry services and tasks.",
+                "risk": SAFE,
+                "cmds": [
+                    'schtasks /Change /TN "NvTmRep" /Disable',
+                    'schtasks /Change /TN "NvTmRepOnLogon" /Disable',
+                    'schtasks /Change /TN "NvTmMon" /Disable',
+                    'sc stop NvTelemetryContainer',
+                    'sc config NvTelemetryContainer start=disabled',
+                ],
+            },
         ],
     },
     "Services  &  Tasks": {
@@ -663,6 +918,48 @@ CATEGORIES = {
                     'schtasks /Change /TN "Microsoft\\Windows\\Windows Error Reporting\\QueueReporting" /Disable',
                 ],
             },
+            {
+                "name": "Disable Print Spooler",
+                "desc": "Disables the printer service. Only use this if you NEVER print to a physical or PDF printer.",
+                "risk": MEDIUM,
+                "cmds": [
+                    'sc stop Spooler', 'sc config Spooler start=disabled',
+                ],
+            },
+            {
+                "name": "Disable Windows Search Service",
+                "desc": "Disables the background file indexer. Search will still work but will be slower. Saves massive disk I/O.",
+                "risk": MEDIUM,
+                "cmds": [
+                    'sc stop WSearch', 'sc config WSearch start=disabled',
+                ],
+            },
+            {
+                "name": "Disable Windows Update Service",
+                "desc": "Completely disables Windows Update. HIGH RISK. You will not receive security patches or feature updates.",
+                "risk": HIGH,
+                "cmds": [
+                    'sc stop wuauserv', 'sc config wuauserv start=disabled',
+                    'sc stop WaaSMedicSvc', 'sc config WaaSMedicSvc start=disabled',
+                    'sc stop UsoSvc', 'sc config UsoSvc start=disabled',
+                ],
+            },
+            {
+                "name": "Disable Background Intelligent Transfer (BITS)",
+                "desc": "Disables BITS, which is used by Windows Update and other apps to download files in the background.",
+                "risk": MEDIUM,
+                "cmds": [
+                    'sc stop BITS', 'sc config BITS start=disabled',
+                ],
+            },
+            {
+                "name": "Disable Security Center Service",
+                "desc": "Disables the Windows Security Center service. Stops notifications about antivirus and firewall status.",
+                "risk": HIGH,
+                "cmds": [
+                    'sc stop wscsvc', 'sc config wscsvc start=disabled',
+                ],
+            },
         ],
     },
     "Cleanup": {
@@ -715,6 +1012,26 @@ CATEGORIES = {
                     'fsutil behavior set disablelastaccess 1',
                     'fsutil behavior set disable8dot3 1',
                     'fsutil behavior set memoryusage 2',
+                ],
+            },
+            {
+                "name": "Clear Windows Update Cache (SoftwareDistribution)",
+                "desc": "Deletes downloaded Windows Update files. Fixes stuck updates and frees up massive amounts of space.",
+                "risk": SAFE,
+                "cmds": [
+                    'net stop wuauserv',
+                    'net stop bits',
+                    'cmd /c del /q /f /s "%WINDIR%\\SoftwareDistribution\\Download\\*" 2>nul',
+                    'net start wuauserv',
+                    'net start bits',
+                ],
+            },
+            {
+                "name": "Clear Event Viewer Logs",
+                "desc": "Wipes all Windows Event logs. Good for a fresh start when troubleshooting, or just to free up space.",
+                "risk": SAFE,
+                "cmds": [
+                    'powershell -NoProfile -Command "Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log }"',
                 ],
             },
         ],
@@ -805,9 +1122,36 @@ CATEGORIES = {
                     'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Remote Assistance" /v "fAllowToGetHelp" /t REG_DWORD /d 0 /f',
                 ],
             },
+            {
+                "name": "Disable Action Center / Notifications",
+                "desc": "Completely disables the Windows Action Center and all toast notifications. Pure uninterrupted focus.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer" /v "DisableNotificationCenter" /t REG_DWORD /d 1 /f',
+                    'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PushNotifications" /v "ToastEnabled" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Lock Screen",
+                "desc": "Skips the picture lock screen and goes straight to the password/PIN prompt on boot.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization" /v "NoLockScreen" /t REG_DWORD /d 1 /f',
+                ],
+            },
+            {
+                "name": "Disable Aero Shake & Snap Assist",
+                "desc": "Stops windows from minimizing when you shake them, and stops the annoying snap assist suggestions.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisallowShaking" /t REG_DWORD /d 1 /f',
+                    'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "SnapAssist" /t REG_DWORD /d 0 /f',
+                ],
+            },
         ],
     },
 }
+
 
 
 # ─── Application Class ──────────────────────────────────────────────────
