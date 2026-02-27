@@ -8,7 +8,7 @@ import shlex
 import re
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.0.7"
+APP_VERSION = "v1.0.8"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 if not getattr(sys, 'frozen', False):
