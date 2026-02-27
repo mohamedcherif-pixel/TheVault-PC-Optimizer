@@ -5,13 +5,16 @@ import urllib.request
 import json
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.0.4"
+APP_VERSION = "v1.0.5"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
-try:
-    import pygame
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pygame"])
+if not getattr(sys, 'frozen', False):
+    try:
+        import pygame
+    except ImportError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "pygame"])
+        import pygame
+else:
     import pygame
 
 
@@ -1272,9 +1275,12 @@ class OptimizerApp:
             batch_path = os.path.join(os.environ["TEMP"], "vault_patcher.bat")
             with open(batch_path, "w") as f:
                 f.write(f"""@echo off
-timeout /t 2 /nobreak > nul
-del "{current_exe}.old" 2>nul
-move /y "{current_exe}" "{current_exe}.old"
+setlocal
+set "_MEIPASS="
+set "PYTHONHOME="
+timeout /t 3 /nobreak > nul
+del "{current_exe}.patch_old" 2>nul
+move /y "{current_exe}" "{current_exe}.patch_old"
 move /y "{temp_new_exe}" "{current_exe}"
 start "" "{current_exe}"
 del "%~f0"
