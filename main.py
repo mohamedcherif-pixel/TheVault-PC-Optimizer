@@ -5,7 +5,7 @@ import urllib.request
 import json
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.0.2"
+APP_VERSION = "v1.0.3"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 try:
@@ -836,7 +836,6 @@ class OptimizerApp:
         # Check for updates in background
         threading.Thread(target=self._check_for_updates, daemon=True).start()
 
-    # ── Auto Updater ─────────────────────────────────────────────────
     def _check_for_updates(self):
         try:
             url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
@@ -846,62 +845,106 @@ class OptimizerApp:
                 latest_version = data.get("tag_name", "")
                 
                 if latest_version and latest_version != APP_VERSION:
-                    setup_url = ""
-                    any_exe_url = ""
+                    standalone_exe_url = ""
                     for asset in data.get("assets", []):
                         name = asset.get("name", "")
-                        if name.endswith(".exe"):
-                            any_exe_url = asset.get("browser_download_url")
-                            if "Setup" in name:
-                                setup_url = any_exe_url
-                                break
+                        # Prioritize the standalone optimizer exe, NOT the setup
+                        if name == "TheVault_Optimizer.exe":
+                            standalone_exe_url = asset.get("browser_download_url")
+                            break
                     
-                    download_url = setup_url if setup_url else any_exe_url
-                    if download_url:
-                        self.root.after(2000, lambda: self._prompt_update(latest_version, download_url))
+                    if standalone_exe_url:
+                        self.root.after(2000, lambda: self._prompt_update(latest_version, standalone_exe_url))
         except Exception as e:
             print(f"Update check failed: {e}")
 
     def _prompt_update(self, latest_version, download_url):
-        msg = f"A new version ({latest_version}) is available!\n\nWould you like to download and install the update now?"
+        msg = f"A new version ({latest_version}) is available!\n\nWould you like to apply the update now?"
         if messagebox.askyesno("Update Available", msg):
-            threading.Thread(target=self._download_and_install_update, args=(download_url,), daemon=True).start()
+            threading.Thread(target=self._download_and_apply_patch, args=(download_url,), daemon=True).start()
 
-    def _download_and_install_update(self, url):
+    def _download_and_apply_patch(self, url):
         try:
-            # Simple "Downloading" window overlay
+            # UI Overlay for progress
             progress_win = tk.Toplevel(self.root)
-            progress_win.title("Updating...")
-            progress_win.geometry("340x120")
-            progress_win.configure(bg="#0a0a0a", highlightthickness=1, highlightbackground=ACCENT)
+            progress_win.title("Direct Patching...")
+            progress_win.geometry("380x150")
+            progress_win.configure(bg="#080808", highlightthickness=1, highlightbackground=ACCENT)
             progress_win.attributes("-topmost", True)
             progress_win.overrideredirect(True)
             
             # Center of the screen
-            w, h = 340, 120
+            w, h = 380, 150
             x = (progress_win.winfo_screenwidth() // 2) - (w // 2)
             y = (progress_win.winfo_screenheight() // 2) - (h // 2)
             progress_win.geometry(f"{w}x{h}+{x}+{y}")
 
-            tk.Label(progress_win, text="\U0001F504 THE VAULT: UPDATING", font=("Segoe UI", 12, "bold"), bg="#0a0a0a", fg=ACCENT).pack(pady=(20, 5))
-            tk.Label(progress_win, text="Downloading latest assets...", font=("Segoe UI", 9), bg="#0a0a0a", fg=TEXT_DIM).pack()
-            progress_win.update()
-
-            # Download using urllib for simplicity
-            temp_path = os.path.join(os.environ["TEMP"], "TheVault_Update_Setup.exe")
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req) as response:
-                with open(temp_path, 'wb') as out_file:
-                    out_file.write(response.read())
+            tk.Label(progress_win, text="\U0001F504 PATCHING SYSTEM", font=("Segoe UI", 12, "bold"), bg="#080808", fg=ACCENT).pack(pady=(20, 5))
+            status_lbl = tk.Label(progress_win, text="Initializing secure download...", font=("Segoe UI", 9), bg="#080808", fg=TEXT_DIM)
+            status_lbl.pack()
             
-            # Execute setup and close app
-            # /SILENT /VERYSILENT could be used, but /CLOSEAPPLICATIONS is better if we want it seamless
-            subprocess.Popen([temp_path], shell=True)
-            time.sleep(0.5)
+            # Progress bar simulation / actual download
+            prog_bar_bg = tk.Frame(progress_win, bg="#1a1a1a", width=300, height=4)
+            prog_bar_bg.pack(pady=15)
+            prog_bar = tk.Frame(prog_bar_bg, bg=ACCENT, width=0, height=4)
+            prog_bar.place(x=0, y=0)
+
+            def update_ui(txt, pct):
+                status_lbl.configure(text=txt)
+                prog_bar.configure(width=int(300 * (pct / 100)))
+                progress_win.update()
+
+            # Download using chunks for smoother UI
+            temp_new_exe = os.path.join(os.environ["TEMP"], "TheVault_New_Version.exe")
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            
+            with urllib.request.urlopen(req) as response:
+                total_size = int(response.info().get('Content-Length', 0))
+                downloaded = 0
+                chunk_size = 1024 * 64
+                
+                with open(temp_new_exe, 'wb') as out_file:
+                    while True:
+                        chunk = response.read(chunk_size)
+                        if not chunk: break
+                        out_file.write(chunk)
+                        downloaded += len(chunk)
+                        if total_size > 0:
+                            percent = (downloaded / total_size) * 100
+                            update_ui(f"Downloading core patches... {int(percent)}%", percent)
+
+            update_ui("Applying patches to core files...", 100)
+            time.sleep(1)
+
+            # --- Hot Swap Logic ---
+            current_exe = sys.executable if getattr(sys, 'frozen', False) else __file__
+            if not getattr(sys, 'frozen', False):
+                messagebox.showwarning("Developer Mode", "Hot-patching disabled in script mode. Downloaded to temp folder.")
+                progress_win.destroy()
+                return
+
+            # Create a batch script to swap the files
+            # It waits for this process to end, replaces it, and restarts
+            batch_path = os.path.join(os.environ["TEMP"], "vault_patcher.bat")
+            with open(batch_path, "w") as f:
+                f.write(f"""@echo off
+timeout /t 2 /nobreak > nul
+del "{current_exe}.old" 2>nul
+move /y "{current_exe}" "{current_exe}.old"
+move /y "{temp_new_exe}" "{current_exe}"
+start "" "{current_exe}"
+del "%~f0"
+""")
+
+            # Launch patcher and exit
+            subprocess.Popen(["cmd.exe", "/c", batch_path], shell=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            progress_win.destroy()
             self.root.after(0, self.root.destroy)
             sys.exit()
+
         except Exception as e:
-            messagebox.showerror("Update Error", f"Update failed: {e}")
+            messagebox.showerror("Update Error", f"Patching failed: {e}")
+            if 'progress_win' in locals(): progress_win.destroy()
 
     # ── Music ────────────────────────────────────────────────────────
     def _play_music(self):
