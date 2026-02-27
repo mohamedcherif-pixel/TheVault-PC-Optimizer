@@ -1,6 +1,12 @@
 import os, sys, ctypes, subprocess, threading, time
 import tkinter as tk
 from tkinter import messagebox
+import urllib.request
+import json
+
+# ─── App Version ────────────────────────────────────────────────────────
+APP_VERSION = "v1.0.0"
+GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 try:
     import pygame
@@ -808,7 +814,7 @@ CATEGORIES = {
 class OptimizerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("The Vault  |  PC Optimizer")
+        self.root.title(f"The Vault  |  PC Optimizer {APP_VERSION}")
         self.root.geometry("980x700")
         self.root.minsize(900, 600)
         self.root.configure(bg=BG)
@@ -826,6 +832,36 @@ class OptimizerApp:
         self._build_ui()
         self._show_category(list(CATEGORIES.keys())[0])
         self._play_music()
+        
+        # Check for updates in background
+        threading.Thread(target=self._check_for_updates, daemon=True).start()
+
+    # ── Auto Updater ─────────────────────────────────────────────────
+    def _check_for_updates(self):
+        try:
+            url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                data = json.loads(response.read().decode())
+                latest_version = data.get("tag_name", "")
+                
+                if latest_version and latest_version != APP_VERSION:
+                    download_url = ""
+                    for asset in data.get("assets", []):
+                        if asset.get("name", "").endswith(".exe"):
+                            download_url = asset.get("browser_download_url")
+                            break
+                    
+                    if download_url:
+                        self.root.after(2000, lambda: self._prompt_update(latest_version, download_url))
+        except Exception as e:
+            print(f"Update check failed: {e}")
+
+    def _prompt_update(self, latest_version, download_url):
+        msg = f"A new version ({latest_version}) is available!\n\nYou are currently running {APP_VERSION}.\n\nWould you like to download the update now?"
+        if messagebox.askyesno("Update Available", msg):
+            import webbrowser
+            webbrowser.open(download_url)
 
     # ── Music ────────────────────────────────────────────────────────
     def _play_music(self):
