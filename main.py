@@ -5,7 +5,7 @@ import urllib.request
 import json
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.0.5"
+APP_VERSION = "v1.0.6"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 if not getattr(sys, 'frozen', False):
@@ -200,6 +200,40 @@ CATEGORIES = {
                     'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\SystemRestore" /v "DisableSR" /t REG_DWORD /d 1 /f',
                 ],
             },
+            {
+                "name": "Disable SEHOP (Exception Chain Validation)",
+                "desc": "Disables Structured Exception Handling Overwrite Protection. Removes a security check on every exception thrown by applications. Good for raw performance.",
+                "risk": HIGH,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel" /v "DisableExceptionChainValidation" /t REG_DWORD /d 1 /f',
+                ],
+            },
+            {
+                "name": "Disable Background Apps Globally",
+                "desc": "Stops all UWP/Windows apps from running in the background. Frees up CPU cycles and RAM.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications" /v "GlobalUserDisabled" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy" /v "LetAppsRunInBackground" /t REG_DWORD /d 2 /f',
+                ],
+            },
+            {
+                "name": "Disable Prefetcher & Superfetch (Registry)",
+                "desc": "Hard-disables the memory prefetcher at the kernel level. Essential for SSDs to prevent unnecessary write cycles and CPU overhead.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters" /v "EnablePrefetcher" /t REG_DWORD /d 0 /f',
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters" /v "EnableSuperfetch" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Memory Page Trimming",
+                "desc": "Prevents Windows from aggressively paging out the memory of minimized applications. Huge for alt-tabbing in and out of games instantly.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management" /v "DisablePageTrimming" /t REG_DWORD /d 1 /f',
+                ],
+            },
         ],
     },
     "GPU  &  Gaming": {
@@ -324,6 +358,31 @@ CATEGORIES = {
                     'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "PresenceWriterEnabled" /t REG_DWORD /d 0 /f',
                 ],
             },
+            {
+                "name": "Disable Windows Ink Workspace",
+                "desc": "Disables Windows Ink. Crucial for osu! and FPS players to remove pen/tablet input processing overhead from raw mouse input.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsInkWorkspace" /v "AllowWindowsInkWorkspace" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Optimize DirectX Graphics Kernel (MaxDxgkIter)",
+                "desc": "Limits the DirectX graphics kernel iterations. Reduces the pre-rendered frame queue at the OS level for lower input lag.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\DirectX" /v "MaxDxgkIter" /t REG_DWORD /d 1 /f',
+                ],
+            },
+            {
+                "name": "Disable DWM Ghosting / Composition (Legacy)",
+                "desc": "Disables window ghosting and forces DWM to stop animating unresponsive windows. Helps prevent crashes during heavy game loads.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\Control Panel\\Desktop" /v "HungAppTimeout" /t REG_SZ /d "1000" /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DWM" /v "DisallowAnimations" /t REG_DWORD /d 1 /f',
+                ],
+            },
         ],
     },
     "Timer  &  Clock": {
@@ -435,6 +494,41 @@ CATEGORIES = {
                 "cmds": [
                     'netsh int tcp set global fastopen=enabled',
                     'netsh int tcp set global fastopenfallback=enabled',
+                ],
+            },
+            {
+                "name": "Set TCP Congestion Control to CUBIC",
+                "desc": "Changes the TCP congestion provider to CUBIC. Better for high-speed, low-latency connections compared to the default CTCP.",
+                "risk": SAFE,
+                "cmds": [
+                    'netsh int tcp set supplemental template=internet congestionprovider=cubic',
+                ],
+            },
+            {
+                "name": "Disable Network Offloads (Chimney & Task)",
+                "desc": "Disables TCP Chimney Offload and Task Offload. These often cause DPC latency spikes on consumer NICs (Realtek/Intel).",
+                "risk": SAFE,
+                "cmds": [
+                    'netsh int tcp set global chimney=disabled',
+                    'netsh int tcp set global taskoffload=disabled',
+                ],
+            },
+            {
+                "name": "Disable IPv6 Tunneling (Teredo, ISATAP, 6to4)",
+                "desc": "Disables legacy IPv6 transition technologies that constantly poll the network and create unnecessary virtual adapters.",
+                "risk": SAFE,
+                "cmds": [
+                    'netsh interface teredo set state disabled',
+                    'netsh interface isatap set state default state=disabled',
+                    'netsh interface ipv6 6to4 set state state=disabled',
+                ],
+            },
+            {
+                "name": "Disable WMM (Wi-Fi Multimedia) Power Save",
+                "desc": "Stops the Wi-Fi adapter from entering low-power states between packet bursts. Crucial for stable wireless ping.",
+                "risk": SAFE,
+                "cmds": [
+                    'powershell -NoProfile -Command "Get-NetAdapterAdvancedProperty -DisplayName \'*WMM*\' | Set-NetAdapterAdvancedProperty -DisplayValue \'Disabled\' -EA SilentlyContinue"',
                 ],
             },
             {
@@ -634,6 +728,31 @@ CATEGORIES = {
                     'powercfg /change disk-timeout-ac 0',
                 ],
             },
+            {
+                "name": "Disable Connected Standby (Modern Standby)",
+                "desc": "Forces S3 sleep instead of S0ix. Prevents the PC from waking up in a backpack, draining battery, and running background tasks while 'asleep'.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\System\\CurrentControlSet\\Control\\Power" /v "PlatformAoAcOverride" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Hibernation & Fast Startup",
+                "desc": "Deletes the hiberfil.sys file (saving GBs of space) and forces a true clean boot every time you shut down, preventing driver rot.",
+                "risk": SAFE,
+                "cmds": [
+                    'powercfg -h off',
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power" /v "HiberbootEnabled" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Dynamic Tick",
+                "desc": "Stops Windows from dynamically adjusting the system timer tick rate to save power. Keeps the tick rate constant for smoother DPC execution.",
+                "risk": LOW,
+                "cmds": [
+                    'bcdedit /set disabledynamictick yes',
+                ],
+            },
         ],
     },
     "MSI  &  Interrupts": {
@@ -723,6 +842,25 @@ CATEGORIES = {
                 "cmds": [
                     'reg add "HKCU\\Control Panel\\Keyboard" /v "KeyboardDelay" /t REG_SZ /d "0" /f',
                     'reg add "HKCU\\Control Panel\\Keyboard" /v "KeyboardSpeed" /t REG_SZ /d "31" /f',
+                ],
+            },
+            {
+                "name": "Disable Mouse Smoothing (Enhance Pointer Precision)",
+                "desc": "Disables Windows built-in mouse acceleration. Essential for consistent muscle memory in FPS games.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\Control Panel\\Mouse" /v "MouseSpeed" /t REG_SZ /d "0" /f',
+                    'reg add "HKCU\\Control Panel\\Mouse" /v "MouseThreshold1" /t REG_SZ /d "0" /f',
+                    'reg add "HKCU\\Control Panel\\Mouse" /v "MouseThreshold2" /t REG_SZ /d "0" /f',
+                ],
+            },
+            {
+                "name": "Force 1000Hz USB Polling Rate (Legacy)",
+                "desc": "Attempts to force legacy USB drivers to poll at 1ms intervals. May not work on modern xHCI controllers but harmless to try.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\mouclass\\Parameters" /v "MouseDataQueueSize" /t REG_DWORD /d 100 /f',
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\kbdclass\\Parameters" /v "KeyboardDataQueueSize" /t REG_DWORD /d 100 /f',
                 ],
             },
         ],
@@ -845,6 +983,32 @@ CATEGORIES = {
                     'schtasks /Change /TN "NvTmMon" /Disable',
                     'sc stop NvTelemetryContainer',
                     'sc config NvTelemetryContainer start=disabled',
+                ],
+            },
+            {
+                "name": "Disable Windows Defender SmartScreen",
+                "desc": "Stops Windows from sending URLs and downloaded file hashes to Microsoft servers for reputation checking.",
+                "risk": MEDIUM,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v "EnableSmartScreen" /t REG_DWORD /d 0 /f',
+                    'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppHost" /v "EnableWebContentEvaluation" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Error Reporting (WER)",
+                "desc": "Stops Windows from generating crash dumps and sending them to Microsoft. Saves disk space and CPU cycles during crashes.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting" /v "Disabled" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting" /v "Disabled" /t REG_DWORD /d 1 /f',
+                ],
+            },
+            {
+                "name": "Disable Inventory Collector",
+                "desc": "Stops Windows from scanning your hard drive to build an inventory of installed applications and files to send to Microsoft.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat" /v "DisableInventory" /t REG_DWORD /d 1 /f',
                 ],
             },
         ],
@@ -1037,6 +1201,24 @@ CATEGORIES = {
                     'powershell -NoProfile -Command "Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log }"',
                 ],
             },
+            {
+                "name": "Disable Windows Error Reporting (WER) Folders",
+                "desc": "Prevents Windows from creating massive crash dump folders in ProgramData and LocalAppData.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting" /v "DontSendAdditionalData" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting" /v "ForceQueue" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Delivery Optimization Cache",
+                "desc": "Stops Windows from caching updates to share with other PCs, freeing up disk space and reducing background disk I/O.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization" /v "DOMaxCacheSize" /t REG_DWORD /d 0 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization" /v "DOAbsoluteMaxCacheSize" /t REG_DWORD /d 0 /f',
+                ],
+            },
         ],
     },
     "UI  &  QoL": {
@@ -1149,6 +1331,27 @@ CATEGORIES = {
                 "cmds": [
                     'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisallowShaking" /t REG_DWORD /d 1 /f',
                     'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "SnapAssist" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Windows Defender (Requires Safe Mode/TrustedInstaller)",
+                "desc": "Attempts to disable Windows Defender. Note: Modern Windows 10/11 heavily protects these keys. May require third-party tools or Safe Mode to fully apply.",
+                "risk": HIGH,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v "DisableAntiSpyware" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection" /v "DisableRealtimeMonitoring" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection" /v "DisableBehaviorMonitoring" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection" /v "DisableOnAccessProtection" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection" /v "DisableScanOnRealtimeEnable" /t REG_DWORD /d 1 /f',
+                ],
+            },
+            {
+                "name": "Disable UAC (User Account Control)",
+                "desc": "Disables the 'Do you want to allow this app to make changes' prompt. Lowers security but removes annoying popups.",
+                "risk": MEDIUM,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "EnableLUA" /t REG_DWORD /d 0 /f',
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "ConsentPromptBehaviorAdmin" /t REG_DWORD /d 0 /f',
                 ],
             },
         ],
