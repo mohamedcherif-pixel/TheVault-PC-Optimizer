@@ -8,7 +8,7 @@ import shlex
 import re
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.1.6"
+APP_VERSION = "v1.1.7"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 pygame = None
