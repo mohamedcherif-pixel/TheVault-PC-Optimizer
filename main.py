@@ -8,7 +8,7 @@ import shlex
 import re
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.0.9"
+APP_VERSION = "v1.1.0"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 if not getattr(sys, 'frozen', False):
@@ -29,23 +29,23 @@ def is_admin():
 
 
 # ─── Color Palette ──────────────────────────────────────────────────────
-BG          = "#0d0d0d"
-BG_CARD     = "#161616"
-BG_HOVER    = "#1c1c1c"
-BG_INPUT    = "#111111"
-ACCENT      = "#6c5ce7"
-ACCENT_DIM  = "#4834d4"
-ACCENT_GLOW = "#a29bfe"
-TEXT        = "#e0e0e0"
-TEXT_DIM    = "#777777"
-TEXT_DARK   = "#444444"
+BG          = "#1e1e1e"
+BG_CARD     = "#252526"
+BG_HOVER    = "#2d2d30"
+BG_INPUT    = "#333333"
+ACCENT      = "#007acc"
+ACCENT_DIM  = "#005c99"
+ACCENT_GLOW = "#0098ff"
+TEXT        = "#cccccc"
+TEXT_DIM    = "#999999"
+TEXT_DARK   = "#666666"
 GREEN       = "#00b894"
 YELLOW      = "#fdcb6e"
 RED         = "#d63031"
 ORANGE      = "#e17055"
-BORDER      = "#222222"
-SIDEBAR_BG  = "#111111"
-SIDEBAR_SEL = "#1a1a2e"
+BORDER      = "#3e3e42"
+SIDEBAR_BG  = "#252526"
+SIDEBAR_SEL = "#37373d"
 
 
 # ─── Risk levels ────────────────────────────────────────────────────────
@@ -240,7 +240,7 @@ CATEGORIES = {
         ],
     },
     "GPU  &  Gaming": {
-        "icon": "\U0001F3AE",
+        "icon": "-",
         "tweaks": [
             {
                 "name": "Disable GPU Preemption",
@@ -444,7 +444,7 @@ CATEGORIES = {
         ],
     },
     "Network": {
-        "icon": "\U0001F310",
+        "icon": "-",
         "tweaks": [
             {
                 "name": "Disable Nagle's Algorithm (All Interfaces)",
@@ -759,7 +759,7 @@ CATEGORIES = {
         ],
     },
     "MSI  &  Interrupts": {
-        "icon": "\U0001F4E1",
+        "icon": "-",
         "tweaks": [
             {
                 "name": "Enable MSI Mode on All PCI Devices",
@@ -796,7 +796,7 @@ CATEGORIES = {
         ],
     },
     "Mouse  &  Input": {
-        "icon": "\U0001F5B1",
+        "icon": "-",
         "tweaks": [
             {
                 "name": "MarkC Mouse Fix (1:1 Raw Input)",
@@ -869,7 +869,7 @@ CATEGORIES = {
         ],
     },
     "Privacy  &  Telemetry": {
-        "icon": "\U0001F512",
+        "icon": "-",
         "tweaks": [
             {
                 "name": "Disable All Windows Telemetry",
@@ -1017,7 +1017,7 @@ CATEGORIES = {
         ],
     },
     "Services  &  Tasks": {
-        "icon": "\U0001F527",
+        "icon": "-",
         "tweaks": [
             {
                 "name": "Disable DiagTrack & WAP Push",
@@ -1133,7 +1133,7 @@ CATEGORIES = {
         ],
     },
     "Cleanup": {
-        "icon": "\U0001F9F9",
+        "icon": "-",
         "tweaks": [
             {
                 "name": "Deep Temp / Cache / Log Cleanup",
@@ -1225,7 +1225,7 @@ CATEGORIES = {
         ],
     },
     "UI  &  QoL": {
-        "icon": "\U0001F3A8",
+        "icon": "-",
         "tweaks": [
             {
                 "name": "Faster Shutdown Timeouts",
@@ -1367,9 +1367,10 @@ CATEGORIES = {
 class OptimizerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title(f"The Vault  |  PC Optimizer {APP_VERSION}")
-        self.root.geometry("980x700")
-        self.root.minsize(900, 600)
+        self.root.title(f"Tools by Blandy | v{APP_VERSION}")
+        self.root.geometry("1200x800")
+        self.root.minsize(1000, 600)
+        self.root.state('zoomed')
         self.root.configure(bg=BG)
 
         # Track tweak state
@@ -1587,8 +1588,8 @@ class OptimizerApp:
             y = (progress_win.winfo_screenheight() // 2) - (h // 2)
             progress_win.geometry(f"{w}x{h}+{x}+{y}")
 
-            tk.Label(progress_win, text="\U0001F504 PATCHING SYSTEM", font=("Segoe UI", 12, "bold"), bg="#080808", fg=ACCENT).pack(pady=(20, 5))
-            status_lbl = tk.Label(progress_win, text="Initializing secure download...", font=("Segoe UI", 9), bg="#080808", fg=TEXT_DIM)
+            tk.Label(progress_win, text="\U0001F504 PATCHING SYSTEM", font=("Arial", 12, "bold"), bg="#080808", fg=ACCENT).pack(pady=(20, 5))
+            status_lbl = tk.Label(progress_win, text="Initializing secure download...", font=("Arial", 9), bg="#080808", fg=TEXT_DIM)
             status_lbl.pack()
             
             # Progress bar simulation / actual download
@@ -1708,14 +1709,14 @@ del "%~f0"
         topbar.pack(fill="x")
         topbar.pack_propagate(False)
 
-        tk.Label(topbar, text="THE VAULT", font=("Consolas", 18, "bold"),
+        tk.Label(topbar, text="Tools by Blandy", font=("Arial", 16, "bold"),
                  bg=BG, fg=ACCENT).pack(side="left", padx=22, pady=14)
-        tk.Label(topbar, text="Advanced PC Optimization Suite",
-                 font=("Segoe UI", 9), bg=BG, fg=TEXT_DIM).pack(side="left", pady=14)
+        tk.Label(topbar, text="System Optimization Utility",
+                 font=("Arial", 9), bg=BG, fg=TEXT_DIM).pack(side="left", pady=14)
 
         # Music toggle
         self.music_on = True
-        self.music_btn = tk.Label(topbar, text="\U0001F50A", font=("Segoe UI", 14),
+        self.music_btn = tk.Label(topbar, text="\U0001F50A", font=("Arial", 14),
                                    bg=BG, fg=TEXT_DIM, cursor="hand2")
         self.music_btn.pack(side="right", padx=20)
         self.music_btn.bind("<Button-1>", self._toggle_music)
@@ -1730,21 +1731,21 @@ del "%~f0"
         body.pack(fill="both", expand=True)
 
         # Sidebar
-        self.sidebar = tk.Frame(body, bg=SIDEBAR_BG, width=200)
+        self.sidebar = tk.Frame(body, bg=SIDEBAR_BG, width=220)
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        tk.Label(self.sidebar, text="CATEGORIES", font=("Segoe UI", 8, "bold"),
+        tk.Label(self.sidebar, text="CATEGORIES", font=("Arial", 8, "bold"),
                  bg=SIDEBAR_BG, fg=TEXT_DARK, anchor="w").pack(fill="x", padx=18, pady=(18, 6))
 
         for cat_name, cat_data in CATEGORIES.items():
             btn = tk.Label(
                 self.sidebar,
-                text=f"  {cat_data['icon']}   {cat_name}",
-                font=("Segoe UI", 10),
+                text=f" {cat_data['icon']}  {cat_name}",
+                font=("Arial", 10),
                 bg=SIDEBAR_BG, fg=TEXT_DIM,
                 anchor="w", cursor="hand2",
-                padx=14, pady=10,
+                padx=14, pady=8,
             )
             btn.pack(fill="x")
             btn.bind("<Button-1>", lambda e, c=cat_name: self._show_category(c))
@@ -1755,16 +1756,34 @@ del "%~f0"
         # Vert separator
         tk.Frame(body, bg=BORDER, width=1).pack(side="left", fill="y")
 
+        # Right Sidebar for Specs
+        self.specs_frame = tk.Frame(body, bg=SIDEBAR_BG, width=320)
+        self.specs_frame.pack(side="right", fill="y")
+        self.specs_frame.pack_propagate(False)
+        
+        tk.Label(self.specs_frame, text="SYSTEM SPECIFICATIONS", font=("Arial", 8, "bold"),
+                 bg=SIDEBAR_BG, fg=TEXT_DARK, anchor="w").pack(fill="x", padx=18, pady=(18, 6))
+                 
+        self.specs_lbl = tk.Label(self.specs_frame, text="Loading hardware info...", font=("Arial", 9),
+                                  bg=SIDEBAR_BG, fg=TEXT, anchor="nw", justify="left", wraplength=280)
+        self.specs_lbl.pack(fill="both", expand=True, padx=18, pady=10)
+        
+        # Load specs in background
+        threading.Thread(target=self._load_specs, daemon=True).start()
+
+        # Vert separator 2
+        tk.Frame(body, bg=BORDER, width=1).pack(side="right", fill="y")
+
         # Content area
         self.content_wrap = tk.Frame(body, bg=BG)
         self.content_wrap.pack(side="left", fill="both", expand=True)
 
         # Category header
-        self.cat_header = tk.Label(self.content_wrap, text="", font=("Segoe UI", 14, "bold"),
+        self.cat_header = tk.Label(self.content_wrap, text="", font=("Arial", 14, "bold"),
                                     bg=BG, fg=TEXT, anchor="w")
         self.cat_header.pack(fill="x", padx=28, pady=(20, 4))
 
-        self.cat_count = tk.Label(self.content_wrap, text="", font=("Segoe UI", 9),
+        self.cat_count = tk.Label(self.content_wrap, text="", font=("Arial", 9),
                                    bg=BG, fg=TEXT_DIM, anchor="w")
         self.cat_count.pack(fill="x", padx=28, pady=(0, 10))
 
@@ -1789,12 +1808,12 @@ del "%~f0"
         bottom.pack_propagate(False)
 
         # Stats
-        self.stats_lbl = tk.Label(bottom, text="0 tweaks selected", font=("Segoe UI", 9),
+        self.stats_lbl = tk.Label(bottom, text="0 tweaks selected", font=("Arial", 9),
                                    bg=BG_CARD, fg=TEXT_DIM)
         self.stats_lbl.pack(side="left", padx=22, pady=18)
 
         # Select All button
-        sa = tk.Label(bottom, text="  SELECT ALL  ", font=("Segoe UI", 9, "bold"),
+        sa = tk.Label(bottom, text="  SELECT ALL  ", font=("Arial", 9, "bold"),
                       bg=BG_CARD, fg=ACCENT, cursor="hand2")
         sa.pack(side="left", padx=6)
         sa.bind("<Button-1>", self._select_all)
@@ -1802,7 +1821,7 @@ del "%~f0"
         sa.bind("<Leave>", lambda e: sa.configure(fg=ACCENT))
 
         # Deselect All
-        da = tk.Label(bottom, text="  DESELECT ALL  ", font=("Segoe UI", 9, "bold"),
+        da = tk.Label(bottom, text="  DESELECT ALL  ", font=("Arial", 9, "bold"),
                       bg=BG_CARD, fg=TEXT_DIM, cursor="hand2")
         da.pack(side="left", padx=6)
         da.bind("<Button-1>", self._deselect_all)
@@ -1826,8 +1845,8 @@ del "%~f0"
     def _draw_apply_btn(self, color):
         c = self.apply_btn
         c.delete("all")
-        self._round_rect(c, 0, 0, 180, 38, 8, fill=color, outline="")
-        c.create_text(90, 19, text="APPLY SELECTED", font=("Segoe UI", 10, "bold"), fill="white")
+        self._round_rect(c, 0, 0, 180, 38, 0, fill=color, outline="")
+        c.create_text(90, 19, text="APPLY SELECTED", font=("Arial", 10, "bold"), fill="white")
 
     def _round_rect(self, canvas, x1, y1, x2, y2, r, **kw):
         pts = [
@@ -1838,6 +1857,30 @@ del "%~f0"
             x1, y2-r, x1, y1+r, x1, y1+r, x1, y1,
         ]
         return canvas.create_polygon(pts, smooth=True, **kw)
+
+
+    def _load_specs(self):
+        try:
+            cmd = '''
+            $os = (Get-CimInstance Win32_OperatingSystem).Caption
+            $cpu = (Get-CimInstance Win32_Processor).Name
+            $gpu = (Get-CimInstance Win32_VideoController).Name -join ' | '
+            $ram = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
+            $mobo = (Get-CimInstance Win32_BaseBoard)
+            $moboName = $mobo.Manufacturer + ' ' + $mobo.Product
+            $disks = (Get-CimInstance Win32_DiskDrive) | ForEach-Object { $_.Model + ' (' + [math]::Round($_.Size / 1GB, 0) + ' GB)' } -join ' | '
+            
+            Write-Output "OS:`n$os`n"
+            Write-Output "CPU:`n$cpu`n"
+            Write-Output "GPU:`n$gpu`n"
+            Write-Output "RAM:`n$ram GB`n"
+            Write-Output "Motherboard:`n$moboName`n"
+            Write-Output "Storage:`n$disks"
+            '''
+            output = subprocess.check_output(["powershell", "-NoProfile", "-Command", cmd], text=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            self.root.after(0, lambda: self.specs_lbl.configure(text=output.strip()))
+        except Exception as e:
+            self.root.after(0, lambda: self.specs_lbl.configure(text=f"Failed to load specs.\n{e}"))
 
     # ── Category Switching ───────────────────────────────────────────
     def _show_category(self, cat_name):
@@ -1888,10 +1931,10 @@ del "%~f0"
         def draw_chk():
             chk_canvas.delete("all")
             if var.get():
-                self._round_rect(chk_canvas, 0, 0, 20, 20, 4, fill=ACCENT, outline="")
-                chk_canvas.create_text(10, 10, text="\u2713", font=("Segoe UI", 11, "bold"), fill="white")
+                self._round_rect(chk_canvas, 0, 0, 20, 20, 0, fill=ACCENT, outline="")
+                chk_canvas.create_text(10, 10, text="\u2713", font=("Arial", 11, "bold"), fill="white")
             else:
-                self._round_rect(chk_canvas, 0, 0, 20, 20, 4, fill="", outline=TEXT_DARK)
+                self._round_rect(chk_canvas, 0, 0, 20, 20, 0, fill="", outline=TEXT_DARK)
 
         self.chk_draw_funcs.append(draw_chk)
 
@@ -1903,17 +1946,17 @@ del "%~f0"
         draw_chk()
         chk_canvas.bind("<Button-1>", toggle)
 
-        title = tk.Label(chk_row, text=tw["name"], font=("Segoe UI", 11, "bold"),
+        title = tk.Label(chk_row, text=tw["name"], font=("Arial", 11, "bold"),
                          bg=BG_CARD, fg=TEXT, cursor="hand2", anchor="w")
         title.pack(side="left")
         title.bind("<Button-1>", toggle)
 
-        applied_lbl = tk.Label(chk_row, text="", font=("Segoe UI", 8, "bold"),
+        applied_lbl = tk.Label(chk_row, text="", font=("Arial", 8, "bold"),
                                bg=BG_CARD, fg=GREEN)
         applied_lbl.pack(side="left", padx=10)
         self.tweak_applied_lbls[tw["name"]] = applied_lbl
 
-        desc = tk.Label(left, text=tw["desc"], font=("Segoe UI", 9),
+        desc = tk.Label(left, text=tw["desc"], font=("Arial", 9),
                         bg=BG_CARD, fg=TEXT_DIM, anchor="w", justify="left", wraplength=520)
         desc.pack(fill="x", padx=30, pady=(2, 0))
 
@@ -1921,7 +1964,7 @@ del "%~f0"
         right = tk.Frame(card, bg=BG_CARD)
         right.pack(side="right", padx=18, pady=6)
 
-        badge = tk.Label(right, text=f"  {risk_label}  ", font=("Consolas", 8, "bold"),
+        badge = tk.Label(right, text=f"  {risk_label}  ", font=("Arial", 8, "bold"),
                          bg=BG_CARD, fg=risk_color, cursor="hand2",
                          highlightbackground=risk_color, highlightthickness=1)
         badge.pack()
@@ -1967,7 +2010,7 @@ del "%~f0"
         frame.pack()
         inner = tk.Frame(frame, bg="#1a1a1a")
         inner.pack(padx=1, pady=1)
-        tk.Label(inner, text=text, font=("Segoe UI", 9), bg="#1a1a1a", fg=color,
+        tk.Label(inner, text=text, font=("Arial", 9), bg="#1a1a1a", fg=color,
                  wraplength=250, padx=10, pady=6, justify="left").pack()
         self.tooltip_win = tw
 
@@ -2027,7 +2070,7 @@ del "%~f0"
         frame.pack()
         inner = tk.Frame(frame, bg="#1a1a1a")
         inner.pack(padx=1, pady=1)
-        tk.Label(inner, text=text, font=("Segoe UI", 9), bg="#1a1a1a", fg=color,
+        tk.Label(inner, text=text, font=("Arial", 9), bg="#1a1a1a", fg=color,
                  wraplength=300, padx=10, pady=6, justify="left").pack()
         self.tooltip_win = tw
 
