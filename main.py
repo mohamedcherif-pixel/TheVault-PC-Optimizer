@@ -5,7 +5,7 @@ import urllib.request
 import json
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.0.1"
+APP_VERSION = "v1.0.2"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 try:
@@ -846,22 +846,62 @@ class OptimizerApp:
                 latest_version = data.get("tag_name", "")
                 
                 if latest_version and latest_version != APP_VERSION:
-                    download_url = ""
+                    setup_url = ""
+                    any_exe_url = ""
                     for asset in data.get("assets", []):
-                        if asset.get("name", "").endswith(".exe"):
-                            download_url = asset.get("browser_download_url")
-                            break
+                        name = asset.get("name", "")
+                        if name.endswith(".exe"):
+                            any_exe_url = asset.get("browser_download_url")
+                            if "Setup" in name:
+                                setup_url = any_exe_url
+                                break
                     
+                    download_url = setup_url if setup_url else any_exe_url
                     if download_url:
                         self.root.after(2000, lambda: self._prompt_update(latest_version, download_url))
         except Exception as e:
             print(f"Update check failed: {e}")
 
     def _prompt_update(self, latest_version, download_url):
-        msg = f"A new version ({latest_version}) is available!\n\nYou are currently running {APP_VERSION}.\n\nWould you like to download the update now?"
+        msg = f"A new version ({latest_version}) is available!\n\nWould you like to download and install the update now?"
         if messagebox.askyesno("Update Available", msg):
-            import webbrowser
-            webbrowser.open(download_url)
+            threading.Thread(target=self._download_and_install_update, args=(download_url,), daemon=True).start()
+
+    def _download_and_install_update(self, url):
+        try:
+            # Simple "Downloading" window overlay
+            progress_win = tk.Toplevel(self.root)
+            progress_win.title("Updating...")
+            progress_win.geometry("340x120")
+            progress_win.configure(bg="#0a0a0a", highlightthickness=1, highlightbackground=ACCENT)
+            progress_win.attributes("-topmost", True)
+            progress_win.overrideredirect(True)
+            
+            # Center of the screen
+            w, h = 340, 120
+            x = (progress_win.winfo_screenwidth() // 2) - (w // 2)
+            y = (progress_win.winfo_screenheight() // 2) - (h // 2)
+            progress_win.geometry(f"{w}x{h}+{x}+{y}")
+
+            tk.Label(progress_win, text="\U0001F504 THE VAULT: UPDATING", font=("Segoe UI", 12, "bold"), bg="#0a0a0a", fg=ACCENT).pack(pady=(20, 5))
+            tk.Label(progress_win, text="Downloading latest assets...", font=("Segoe UI", 9), bg="#0a0a0a", fg=TEXT_DIM).pack()
+            progress_win.update()
+
+            # Download using urllib for simplicity
+            temp_path = os.path.join(os.environ["TEMP"], "TheVault_Update_Setup.exe")
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req) as response:
+                with open(temp_path, 'wb') as out_file:
+                    out_file.write(response.read())
+            
+            # Execute setup and close app
+            # /SILENT /VERYSILENT could be used, but /CLOSEAPPLICATIONS is better if we want it seamless
+            subprocess.Popen([temp_path], shell=True)
+            time.sleep(0.5)
+            self.root.after(0, self.root.destroy)
+            sys.exit()
+        except Exception as e:
+            messagebox.showerror("Update Error", f"Update failed: {e}")
 
     # ── Music ────────────────────────────────────────────────────────
     def _play_music(self):
