@@ -8,7 +8,7 @@ import shlex
 import re
 
 # ─── App Version ────────────────────────────────────────────────────────
-APP_VERSION = "v1.1.2"
+APP_VERSION = "v1.1.3"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 
 pygame = None
@@ -1775,32 +1775,61 @@ class OptimizerApp:
                 progress_win.destroy()
                 return
 
-            # Create a batch script to swap the files
-            # It waits for this process to end, replaces it, and restarts
-            batch_path = os.path.join(os.environ["TEMP"], "vault_patcher.bat")
-            with open(batch_path, "w") as f:
-                f.write(f"""@echo off
-setlocal
-set _MEIPASS=
-set _MEIPASS2=
-set PYTHONHOME=
-set PYTHONPATH=
-timeout /t 3 /nobreak > nul
-del "{current_exe}.patch_old" 2>nul
-move /y "{current_exe}" "{current_exe}.patch_old"
-move /y "{temp_new_exe}" "{current_exe}"
-start "" "{current_exe}"
-del "%~f0"
+            # ── Deep-fix hot swap ─────────────────────────────────────────────
+            current_pid  = os.getpid()
+            # current_exe already set above (sys.executable, validated frozen)
+
+            ps_script = os.path.join(os.environ["TEMP"], "vault_launcher.ps1")
+            with open(ps_script, "w", encoding="utf-8") as f:
+                f.write(f"""# vault_launcher.ps1  —  written by Tools by Blandy patcher
+$targetExe  = '{current_exe.replace("'", "''")}' 
+$newExe     = '{temp_new_exe.replace("'", "''")}'
+$oldPID     = {current_pid}
+
+# Wait for the old process to fully exit (up to 30 s)
+try {{
+    $proc = Get-Process -Id $oldPID -ErrorAction SilentlyContinue
+    if ($proc) {{
+        $proc | Wait-Process -Timeout 30 -ErrorAction SilentlyContinue
+    }}
+}} catch {{ }}
+
+Start-Sleep -Milliseconds 500
+
+# Swap the files
+$backup = $targetExe + '.patch_old'
+if (Test-Path $backup) {{ Remove-Item $backup -Force -ErrorAction SilentlyContinue }}
+Move-Item -LiteralPath $targetExe -Destination $backup -Force
+Move-Item -LiteralPath $newExe    -Destination $targetExe -Force
+
+# Launch the new exe with a CLEAN environment (no _MEIPASS / stale PATH / PYTHONHOME)
+Start-Process -FilePath $targetExe -UseNewEnvironment
+
+# Self-delete this script
+Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
 """)
 
-            # Launch patcher and exit
-            env = os.environ.copy()
-            env.pop("_MEIPASS", None)
-            env.pop("_MEIPASS2", None)
-            env.pop("PYTHONHOME", None)
-            env.pop("PYTHONPATH", None)
-            
-            subprocess.Popen(["cmd.exe", "/c", batch_path], shell=True, creationflags=subprocess.CREATE_NO_WINDOW, env=env)
+            # Launch the PowerShell script fully detached so it outlives this process.
+            # Use CREATE_NEW_PROCESS_GROUP + DETACHED_PROCESS so it is NOT a child
+            # of this PyInstaller exe and cannot inherit any handles or env from it.
+            DETACHED_PROCESS    = 0x00000008
+            CREATE_NEW_PG       = 0x00000200
+            CREATE_NO_WIN       = 0x08000000
+            subprocess.Popen(
+                [
+                    "powershell.exe",
+                    "-NoProfile",
+                    "-NonInteractive",
+                    "-WindowStyle", "Hidden",
+                    "-ExecutionPolicy", "Bypass",
+                    "-File", ps_script,
+                ],
+                creationflags=DETACHED_PROCESS | CREATE_NEW_PG | CREATE_NO_WIN,
+                close_fds=True,
+                # DO NOT pass env= here — use the raw inherited env so powershell.exe
+                # itself launches correctly, but -UseNewEnvironment inside the script
+                # will strip everything before handing control to the new exe.
+            )
             os._exit(0)
 
         except Exception as e:
