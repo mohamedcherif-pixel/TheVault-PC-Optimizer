@@ -9,7 +9,6 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
-      id-token: write
 
     steps:
     - uses: actions/checkout@v4
@@ -32,43 +31,11 @@ jobs:
       run: |
         iscc setup.iss
 
-    # ── Code Signing (SignPath.io — FREE for open-source) ──
-    # Eliminates the SmartScreen "Windows protected your PC" warning.
-    # See SIGNING.md for setup instructions.
-
-    - name: Upload EXE artifact for signing
-      if: ${{ vars.SIGNPATH_ORG_ID != '' }}
-      uses: actions/upload-artifact@v4
-      id: upload-exe
-      with:
-        name: NormieTools-unsigned
-        path: |
-          dist/NormieTools.exe
-          Output/NormieTools_Setup.exe
-
-    - name: Sign with SignPath.io
-      if: ${{ vars.SIGNPATH_ORG_ID != '' }}
-      uses: signpath/github-action-submit-signing-request@v1
-      with:
-        api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-        organization-id: ${{ vars.SIGNPATH_ORG_ID }}
-        project-slug: NormieTools
-        signing-policy-slug: NormieTools
-        artifact-configuration-slug: initial
-        github-artifact-id: ${{ steps.upload-exe.outputs.artifact-id }}
-        wait-for-completion: true
-        output-artifact-directory: signed-output
-
-    - name: Replace with signed binaries
-      if: ${{ vars.SIGNPATH_ORG_ID != '' }}
-      shell: pwsh
-      run: |
-        if (Test-Path "signed-output/NormieTools.exe") {
-          Copy-Item "signed-output/NormieTools.exe" "dist/NormieTools.exe" -Force
-        }
-        if (Test-Path "signed-output/NormieTools_Setup.exe") {
-          Copy-Item "signed-output/NormieTools_Setup.exe" "Output/NormieTools_Setup.exe" -Force
-        }
+    # ── Code Signing ──
+    # After the build, sign both EXEs via SignPath.io (free for open-source).
+    # Automated CI signing requires the SignPath Foundation plan.
+    # Until then, sign manually: download from release → upload to SignPath → replace.
+    # See SIGNING.md for details.
 
     - name: Generate SHA256 Checksums
       shell: pwsh
