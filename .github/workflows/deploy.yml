@@ -28,45 +28,47 @@ jobs:
       run: |
         pyinstaller NormieTools.spec
 
-    # ── Code Signing with Azure Trusted Signing ──
-    # This removes the SmartScreen "Windows protected your PC" warning.
-    # Requires Azure Trusted Signing secrets to be configured in repo settings.
-    # See SIGNING.md for setup instructions.
-    - name: Sign NormieTools.exe with Azure Trusted Signing
-      if: ${{ secrets.AZURE_TENANT_ID != '' }}
-      uses: azure/trusted-signing-action@v0.5.0
-      with:
-        azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        endpoint: ${{ secrets.TRUSTED_SIGNING_ENDPOINT }}
-        trusted-signing-account-name: ${{ secrets.TRUSTED_SIGNING_ACCOUNT }}
-        certificate-profile-name: ${{ secrets.TRUSTED_SIGNING_CERT_PROFILE }}
-        files-folder: dist
-        files-folder-filter: exe
-        file-digest: SHA256
-        timestamp-rfc3161: http://timestamp.acs.microsoft.com
-        timestamp-digest: SHA256
-
     - name: Build Inno Setup Installer
       run: |
         iscc setup.iss
 
-    - name: Sign NormieTools_Setup.exe with Azure Trusted Signing
-      if: ${{ secrets.AZURE_TENANT_ID != '' }}
-      uses: azure/trusted-signing-action@v0.5.0
+    # ── Code Signing (SignPath.io — FREE for open-source) ──
+    # Eliminates the SmartScreen "Windows protected your PC" warning.
+    # See SIGNING.md for setup instructions.
+
+    - name: Upload EXE artifact for signing
+      if: ${{ vars.SIGNPATH_ORG_ID != '' }}
+      uses: actions/upload-artifact@v4
+      id: upload-exe
       with:
-        azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        endpoint: ${{ secrets.TRUSTED_SIGNING_ENDPOINT }}
-        trusted-signing-account-name: ${{ secrets.TRUSTED_SIGNING_ACCOUNT }}
-        certificate-profile-name: ${{ secrets.TRUSTED_SIGNING_CERT_PROFILE }}
-        files-folder: Output
-        files-folder-filter: exe
-        file-digest: SHA256
-        timestamp-rfc3161: http://timestamp.acs.microsoft.com
-        timestamp-digest: SHA256
+        name: NormieTools-unsigned
+        path: |
+          dist/NormieTools.exe
+          Output/NormieTools_Setup.exe
+
+    - name: Sign with SignPath.io
+      if: ${{ vars.SIGNPATH_ORG_ID != '' }}
+      uses: signpath/github-action-submit-signing-request@v1
+      with:
+        api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+        organization-id: ${{ vars.SIGNPATH_ORG_ID }}
+        project-slug: normietools
+        signing-policy-slug: release-signing
+        artifact-configuration-slug: initial
+        github-artifact-id: ${{ steps.upload-exe.outputs.artifact-id }}
+        wait-for-completion: true
+        output-artifact-directory: signed-output
+
+    - name: Replace with signed binaries
+      if: ${{ vars.SIGNPATH_ORG_ID != '' }}
+      shell: pwsh
+      run: |
+        if (Test-Path "signed-output/NormieTools.exe") {
+          Copy-Item "signed-output/NormieTools.exe" "dist/NormieTools.exe" -Force
+        }
+        if (Test-Path "signed-output/NormieTools_Setup.exe") {
+          Copy-Item "signed-output/NormieTools_Setup.exe" "Output/NormieTools_Setup.exe" -Force
+        }
 
     - name: Generate SHA256 Checksums
       shell: pwsh

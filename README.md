@@ -316,14 +316,14 @@ Most tweaks include **reverse commands** that restore the original Windows defau
 
 ## Code Signing & SmartScreen
 
-NormieTools releases are digitally signed using **Azure Trusted Signing** (Microsoft's own code signing service) to eliminate Windows SmartScreen warnings. Both `NormieTools.exe` and `NormieTools_Setup.exe` are signed automatically during the CI/CD build.
+NormieTools releases are digitally signed using **SignPath.io Foundation** (free code signing for open-source projects) to eliminate Windows SmartScreen warnings. Both `NormieTools.exe` and `NormieTools_Setup.exe` are signed automatically during the CI/CD build.
 
-If you still see a SmartScreen warning (e.g., on older releases or self-built binaries):
+If you still see a SmartScreen warning (e.g., on the first few signed releases or self-built binaries):
 
 1. Click **"More info"**
 2. Click **"Run anyway"**
 
-The source code is fully available for inspection, and every release includes SHA256 checksums for verification. See [SIGNING.md](SIGNING.md) for details on how signing is configured.
+SmartScreen builds trust progressively — after a few signed releases, the warning disappears permanently. The source code is fully available for inspection, and every release includes SHA256 checksums for verification. See [SIGNING.md](SIGNING.md) for details on how signing is configured.
 
 ---
 
@@ -392,12 +392,11 @@ Every push to `main` automatically triggers a [GitHub Actions workflow](https://
 2. **Set up Python 3.13** on `windows-latest`
 3. **Install dependencies** (`pyinstaller`, `pygame`, `requests`)
 4. **Build** the standalone EXE with PyInstaller
-5. **Sign the EXE** with Azure Trusted Signing (Microsoft's code signing service)
-6. **Build** the installer with Inno Setup (`iscc setup.iss`)
-7. **Sign the installer** with Azure Trusted Signing
-8. **Generate SHA256 checksums** for both signed artifacts
-9. **Create a GitHub Release** with the version tag extracted from `main.py`
-10. **Upload artifacts**: `NormieTools.exe`, `NormieTools_Setup.exe`, `CHECKSUMS.txt`
+5. **Build** the installer with Inno Setup (`iscc setup.iss`)
+6. **Sign both binaries** with SignPath.io (free code signing for open-source)
+7. **Generate SHA256 checksums** for both signed artifacts
+8. **Create a GitHub Release** with the version tag extracted from `main.py`
+9. **Upload artifacts**: `NormieTools.exe`, `NormieTools_Setup.exe`, `CHECKSUMS.txt`
 
 No manual release process — just push to main and the build + sign + release happens automatically.
 
