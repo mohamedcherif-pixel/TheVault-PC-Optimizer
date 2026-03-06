@@ -14,7 +14,7 @@ APP_VERSION = "v1.1.7"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 CONTACT_EMAIL = "medcherif2004@gmail.com"
 
-SKIP_LOADING = True  # Set to False to re-enable the loading/splash screen
+SKIP_LOADING = False  # Set to True to skip the loading/splash screen
 
 _CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "normietools_config.json")
 _BREVO_KEY = os.environ.get("BREVO_API_KEY", "")
