@@ -38,7 +38,7 @@
 - [How Tweaks Work](#how-tweaks-work)
 - [Safety & Risk Levels](#safety--risk-levels)
 - [Revert System](#revert-system)
-- [SmartScreen Warning](#smartscreen-warning)
+- [Code Signing & SmartScreen](#code-signing--smartscreen)
 - [Run from Source](#run-from-source)
 - [Build from Source](#build-from-source)
 - [Build the Installer](#build-the-installer)
@@ -314,14 +314,16 @@ Most tweaks include **reverse commands** that restore the original Windows defau
 
 ---
 
-## SmartScreen Warning
+## Code Signing & SmartScreen
 
-Since NormieTools is not code-signed, Windows Defender SmartScreen will show a warning when you first run it:
+NormieTools releases are digitally signed using **Azure Trusted Signing** (Microsoft's own code signing service) to eliminate Windows SmartScreen warnings. Both `NormieTools.exe` and `NormieTools_Setup.exe` are signed automatically during the CI/CD build.
+
+If you still see a SmartScreen warning (e.g., on older releases or self-built binaries):
 
 1. Click **"More info"**
 2. Click **"Run anyway"**
 
-This is standard behavior for any unsigned open-source application. The source code is fully available for inspection, and every release includes SHA256 checksums for verification.
+The source code is fully available for inspection, and every release includes SHA256 checksums for verification. See [SIGNING.md](SIGNING.md) for details on how signing is configured.
 
 ---
 
@@ -390,12 +392,14 @@ Every push to `main` automatically triggers a [GitHub Actions workflow](https://
 2. **Set up Python 3.13** on `windows-latest`
 3. **Install dependencies** (`pyinstaller`, `pygame`, `requests`)
 4. **Build** the standalone EXE with PyInstaller
-5. **Build** the installer with Inno Setup (`iscc setup.iss`)
-6. **Generate SHA256 checksums** for both artifacts
-7. **Create a GitHub Release** with the version tag extracted from `main.py`
-8. **Upload artifacts**: `NormieTools.exe`, `NormieTools_Setup.exe`, `CHECKSUMS.txt`
+5. **Sign the EXE** with Azure Trusted Signing (Microsoft's code signing service)
+6. **Build** the installer with Inno Setup (`iscc setup.iss`)
+7. **Sign the installer** with Azure Trusted Signing
+8. **Generate SHA256 checksums** for both signed artifacts
+9. **Create a GitHub Release** with the version tag extracted from `main.py`
+10. **Upload artifacts**: `NormieTools.exe`, `NormieTools_Setup.exe`, `CHECKSUMS.txt`
 
-No manual release process — just push to main and the build + release happens automatically.
+No manual release process — just push to main and the build + sign + release happens automatically.
 
 ---
 
@@ -412,11 +416,12 @@ No manual release process — just push to main and the build + release happens 
 ├── LICENSE                  # MIT License
 ├── README.md                # This file
 ├── SECURITY.md              # Security disclosure & transparency info
+├── SIGNING.md               # Code signing setup instructions
 ├── INFO_BEFORE.txt          # Pre-install information shown by installer
 ├── installer_license.txt    # License text shown during install
 └── .github/
     └── workflows/
-        └── deploy.yml       # CI/CD: auto-build and release on push
+        └── deploy.yml       # CI/CD: auto-build, sign, and release on push
 ```
 
 ---
