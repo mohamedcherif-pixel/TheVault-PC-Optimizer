@@ -136,9 +136,9 @@ var
   TimerActive: Boolean;
   VersionLabel, URLLabel, ElapsedLabel: TNewStaticText;
   AcceptLabel, RejectLabel, LicInfoLabel: TNewStaticText;
-  MarqueeLabel, ProgressLabel: TNewStaticText;
+  ProgressLabel: TNewStaticText;
   InstallStartTick: Cardinal;
-  MarqueePos, PulseCounter: Integer;
+  PulseCounter: Integer;
 
 function SetTimer(hWnd: longword; nIDEvent, uElapse: longword; lpTimerFunc: longword): longword;
   external 'SetTimer@user32.dll stdcall';
@@ -175,13 +175,7 @@ begin
     else
       ElapsedLabel.Caption := 'Elapsed: ' + IntToStr(Mins) + ':' + IntToStr(Secs);
   end;
-  // ── Marquee scrolling text ──
-  if (MarqueeLabel <> nil) and MarqueeLabel.Visible then begin
-    MarqueePos := MarqueePos - 10;
-    if MarqueePos < -(MarqueeLabel.Width) then
-      MarqueePos := WizardForm.ClientWidth;
-    MarqueeLabel.Left := MarqueePos;
-  end;
+
   // ── Progress percentage (during install) ──
   if (ProgressLabel <> nil) and ProgressLabel.Visible then begin
     if WizardForm.ProgressGauge.Max > 0 then begin
@@ -343,7 +337,7 @@ begin
   VersionLabel.AutoSize := True;
 
   // ══════════════════════════════════════════════════════════════════
-  //  CLICKABLE GITHUB URL (bottom-right, orange underlined)
+  //  CLICKABLE GITHUB URL (top-left, next to header)
   // ══════════════════════════════════════════════════════════════════
   URLLabel := TNewStaticText.Create(WizardForm);
   URLLabel.Parent := WizardForm;
@@ -355,8 +349,8 @@ begin
   URLLabel.Cursor := crHand;
   URLLabel.Color := clBlack;
   URLLabel.AutoSize := True;
-  URLLabel.Left := WizardForm.ClientWidth - 230;
-  URLLabel.Top := WizardForm.ClientHeight - 18;
+  URLLabel.Left := 10;
+  URLLabel.Top := 2;
   URLLabel.OnClick := @URLLabelClick;
 
   // ══════════════════════════════════════════════════════════════════
@@ -376,19 +370,7 @@ begin
   InstallStartTick := 0;
   PulseCounter := 0;
 
-  // ══════════════════════════════════════════════════════════════════
-  //  MARQUEE SCROLLING TEXT (green, loops across bottom)
-  // ══════════════════════════════════════════════════════════════════
-  MarqueeLabel := TNewStaticText.Create(WizardForm);
-  MarqueeLabel.Parent := WizardForm;
-  MarqueeLabel.Caption := '  ★  NormieTools v1.1.7  ★  344 Tools & Tweaks  ★  Free & Open Source  ★  MIT License  ★  github.com/mohamedcherif-pixel  ★  ';
-  MarqueeLabel.Font.Color := clLime;
-  MarqueeLabel.Font.Size := 8;
-  MarqueeLabel.Font.Name := 'Consolas';
-  MarqueeLabel.Color := clBlack;
-  MarqueeLabel.AutoSize := True;
-  MarqueeLabel.Top := 0;
-  MarqueePos := WizardForm.ClientWidth;
+
 
   // ══════════════════════════════════════════════════════════════════
   //  PROGRESS PERCENTAGE (big, visible during install only)
