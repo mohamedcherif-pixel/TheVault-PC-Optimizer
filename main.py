@@ -10,7 +10,7 @@ import re
 import webbrowser
 
 # ════════════════════════════ App Version ═════════════════════════════
-APP_VERSION = "v1.1.7"
+APP_VERSION = "v1.1.8"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 CONTACT_EMAIL = "medcherif2004@gmail.com"
 

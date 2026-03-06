@@ -1,6 +1,6 @@
 [Setup]
 AppName=NormieTools
-AppVersion=1.1.7
+AppVersion=1.1.8
 AppPublisher=mohamedcherif-pixel
 AppPublisherURL=https://github.com/mohamedcherif-pixel/TheVault-PC-Optimizer
 AppSupportURL=https://github.com/mohamedcherif-pixel/TheVault-PC-Optimizer/issues

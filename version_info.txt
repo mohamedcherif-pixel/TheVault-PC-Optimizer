@@ -4,8 +4,8 @@
 # http://msdn.microsoft.com/en-us/library/ms646997.aspx
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 1, 7, 0),
-    prodvers=(1, 1, 7, 0),
+    filevers=(1, 1, 8, 0),
+    prodvers=(1, 1, 8, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -21,12 +21,12 @@ VSVersionInfo(
           [
             StringStruct(u'CompanyName', u'NormieTools / mohamedcherif-pixel'),
             StringStruct(u'FileDescription', u'NormieTools - System Tweaks & Tools'),
-            StringStruct(u'FileVersion', u'1.1.7.0'),
+            StringStruct(u'FileVersion', u'1.1.8.0'),
             StringStruct(u'InternalName', u'NormieTools'),
             StringStruct(u'LegalCopyright', u'Copyright (c) 2024-2026 mohamedcherif-pixel. MIT License.'),
             StringStruct(u'OriginalFilename', u'NormieTools.exe'),
             StringStruct(u'ProductName', u'NormieTools'),
-            StringStruct(u'ProductVersion', u'1.1.7.0'),
+            StringStruct(u'ProductVersion', u'1.1.8.0'),
           ]
         )
       ]
