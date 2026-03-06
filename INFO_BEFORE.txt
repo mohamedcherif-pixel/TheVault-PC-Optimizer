@@ -1,10 +1,10 @@
-Welcome to TheVault PC Optimizer Setup!
+Welcome to NormieTools Setup!
 
 ===========================================
   ABOUT THIS APPLICATION
 ===========================================
 
-TheVault PC Optimizer is a FREE, open-source Windows optimization tool.
+NormieTools is a FREE, open-source Windows optimization tool.
 It provides 172+ system tweaks and 172+ tool installers in a single app.
 
   - 100% Open Source (MIT License)

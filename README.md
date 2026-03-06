@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="gamephoto.ico" alt="TheVault Logo" width="128"/>
+  <img src="gamephoto.ico" alt="NormieTools Logo" width="128"/>
 </p>
 
-<h1 align="center">TheVault PC Optimizer</h1>
+<h1 align="center">NormieTools</h1>
 
 <p align="center">
   <strong>Open-source Windows optimization toolkit with 344 tweaks & tools</strong>
@@ -42,15 +42,15 @@ A free, open-source, single-file PC optimizer that applies **172 verified tweaks
 ## Download
 
 ### Option 1: Installer (Recommended)
-Download **TheVault_Setup.exe** from the [latest release](https://github.com/mohamedcherif-pixel/TheVault-PC-Optimizer/releases/latest).
+Download **NormieTools_Setup.exe** from the [latest release](https://github.com/mohamedcherif-pixel/TheVault-PC-Optimizer/releases/latest).
 
 ### Option 2: Portable EXE
-Download **TheVault_Optimizer.exe** — no installation needed, runs directly.
+Download **NormieTools.exe** — no installation needed, runs directly.
 
 ### Verify Your Download
 Every release includes a `CHECKSUMS.txt` file with SHA256 hashes. Verify with PowerShell:
 ```powershell
-(Get-FileHash .\TheVault_Optimizer.exe -Algorithm SHA256).Hash
+(Get-FileHash .\NormieTools.exe -Algorithm SHA256).Hash
 ```
 Compare the output with the hash in `CHECKSUMS.txt`.
 
@@ -77,9 +77,9 @@ python main.py
 pip install pyinstaller pygame
 
 # Build standalone EXE
-pyinstaller TheVault_Optimizer.spec
+pyinstaller NormieTools.spec
 
-# Output: dist/TheVault_Optimizer.exe
+# Output: dist/NormieTools.exe
 ```
 
 The `.spec` file includes a `version_info.txt` that embeds proper Windows metadata (company name, version, copyright) into the EXE — visible in File Properties.
@@ -88,7 +88,7 @@ The `.spec` file includes a `version_info.txt` that embeds proper Windows metada
 
 1. Download and install [Inno Setup](https://jrsoftware.org/isinfo.php)
 2. Open `setup.iss` in Inno Setup
-3. Compile — produces `Output/TheVault_Setup.exe`
+3. Compile — produces `Output/NormieTools_Setup.exe`
 
 ## How Tweaks Work
 

@@ -1,15 +1,15 @@
 [Setup]
-AppName=The Vault PC Optimizer
+AppName=NormieTools
 AppVersion=1.1.7
 AppPublisher=mohamedcherif-pixel
 AppPublisherURL=https://github.com/mohamedcherif-pixel/TheVault-PC-Optimizer
 AppSupportURL=https://github.com/mohamedcherif-pixel/TheVault-PC-Optimizer/issues
 AppUpdatesURL=https://github.com/mohamedcherif-pixel/TheVault-PC-Optimizer/releases
 AppCopyright=Copyright (c) 2024-2026 mohamedcherif-pixel
-DefaultDirName={autopf}\TheVaultOptimizer
-DefaultGroupName=The Vault PC Optimizer
+DefaultDirName={autopf}\NormieTools
+DefaultGroupName=NormieTools
 OutputDir=Output
-OutputBaseFilename=TheVault_Setup
+OutputBaseFilename=NormieTools_Setup
 SetupIconFile=gnome.ico
 Compression=lzma2/max
 SolidCompression=yes
@@ -25,21 +25,21 @@ DisableProgramGroupPage=yes
 UninstallDisplayIcon={app}\gnome.ico
 
 [Files]
-Source: "dist\TheVault_Optimizer.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\NormieTools.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Dark Fantasy - shahi77.mp3"; DestDir: "{app}"; Flags: ignoreversion
 Source: "gnome.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "installer_license.txt"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 Source: "INFO_BEFORE.txt"; DestDir: "{app}"; DestName: "README.txt"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\The Vault PC Optimizer"; Filename: "{app}\TheVault_Optimizer.exe"; IconFilename: "{app}\gnome.ico"
-Name: "{autodesktop}\The Vault PC Optimizer"; Filename: "{app}\TheVault_Optimizer.exe"; IconFilename: "{app}\gnome.ico"; Tasks: desktopicon
+Name: "{group}\NormieTools"; Filename: "{app}\NormieTools.exe"; IconFilename: "{app}\gnome.ico"
+Name: "{autodesktop}\NormieTools"; Filename: "{app}\NormieTools.exe"; IconFilename: "{app}\gnome.ico"; Tasks: desktopicon
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Run]
-Filename: "{app}\TheVault_Optimizer.exe"; Description: "{cm:LaunchProgram,The Vault PC Optimizer}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\NormieTools.exe"; Description: "{cm:LaunchProgram,NormieTools}"; Flags: nowait postinstall skipifsilent
 
 [Files]
 Source: "bmp_anim1_0.bmp"; Flags: dontcopy
@@ -381,7 +381,7 @@ begin
   // ══════════════════════════════════════════════════════════════════
   MarqueeLabel := TNewStaticText.Create(WizardForm);
   MarqueeLabel.Parent := WizardForm;
-  MarqueeLabel.Caption := '  ★  TheVault PC Optimizer v1.1.7  ★  344 Tools & Tweaks  ★  Free & Open Source  ★  MIT License  ★  github.com/mohamedcherif-pixel  ★  ';
+  MarqueeLabel.Caption := '  ★  NormieTools v1.1.7  ★  344 Tools & Tweaks  ★  Free & Open Source  ★  MIT License  ★  github.com/mohamedcherif-pixel  ★  ';
   MarqueeLabel.Font.Color := clLime;
   MarqueeLabel.Font.Size := 8;
   MarqueeLabel.Font.Name := 'Consolas';

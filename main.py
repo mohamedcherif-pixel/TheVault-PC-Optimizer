@@ -6129,7 +6129,7 @@ class OptimizerApp:
                     for asset in data.get("assets", []):
                         name = asset.get("name", "")
                         # Prioritize the standalone optimizer exe, NOT the setup
-                        if name == "TheVault_Optimizer.exe":
+                        if name == "NormieTools.exe":
                             standalone_exe_url = asset.get("browser_download_url")
                             break
                     
@@ -6167,7 +6167,7 @@ class OptimizerApp:
                 self.root.after(0, lambda: status_lbl.configure(text=txt))
 
             # Download using chunks for smoother UI
-            temp_new_exe = os.path.join(os.environ["TEMP"], "TheVault_New_Version.exe")
+            temp_new_exe = os.path.join(os.environ["TEMP"], "NormieTools_New_Version.exe")
             # Clean up any stale temp file from a previous failed download
             if os.path.exists(temp_new_exe):
                 try:

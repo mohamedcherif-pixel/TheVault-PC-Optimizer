@@ -19,13 +19,13 @@ VSVersionInfo(
         StringTable(
           u'040904B0',
           [
-            StringStruct(u'CompanyName', u'TheVault / mohamedcherif-pixel'),
-            StringStruct(u'FileDescription', u'TheVault PC Optimizer - System Tweaks & Tools'),
+            StringStruct(u'CompanyName', u'NormieTools / mohamedcherif-pixel'),
+            StringStruct(u'FileDescription', u'NormieTools - System Tweaks & Tools'),
             StringStruct(u'FileVersion', u'1.1.7.0'),
-            StringStruct(u'InternalName', u'TheVault_Optimizer'),
+            StringStruct(u'InternalName', u'NormieTools'),
             StringStruct(u'LegalCopyright', u'Copyright (c) 2024-2026 mohamedcherif-pixel. MIT License.'),
-            StringStruct(u'OriginalFilename', u'TheVault_Optimizer.exe'),
-            StringStruct(u'ProductName', u'TheVault PC Optimizer'),
+            StringStruct(u'OriginalFilename', u'NormieTools.exe'),
+            StringStruct(u'ProductName', u'NormieTools'),
             StringStruct(u'ProductVersion', u'1.1.7.0'),
           ]
         )

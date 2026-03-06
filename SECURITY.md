@@ -35,7 +35,7 @@ This application does **NOT**:
 Every GitHub release includes a `CHECKSUMS.txt` file with SHA256 hashes. Verify with:
 
 ```powershell
-(Get-FileHash .\TheVault_Optimizer.exe -Algorithm SHA256).Hash
+(Get-FileHash .\NormieTools.exe -Algorithm SHA256).Hash
 ```
 
 Compare the output with the hash published in the release.
