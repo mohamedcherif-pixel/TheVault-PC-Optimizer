@@ -1,0 +1,46 @@
+Welcome to TheVault PC Optimizer Setup!
+
+===========================================
+  ABOUT THIS APPLICATION
+===========================================
+
+TheVault PC Optimizer is a FREE, open-source Windows optimization tool.
+It provides 172+ system tweaks and 172+ tool installers in a single app.
+
+  - 100% Open Source (MIT License)
+  - Source code: github.com/mohamedcherif-pixel/TheVault-PC-Optimizer
+  - No malware, no crypto miners, no telemetry
+
+===========================================
+  WHAT THIS APP DOES
+===========================================
+
+  * Registry tweaks for system performance
+  * GPU & gaming optimizations
+  * Network & power tuning
+  * Timer resolution improvements
+  * Privacy & telemetry controls
+  * One-click tool downloads (via winget)
+  * Full revert support for all tweaks
+
+===========================================
+  SAFETY & VERIFICATION
+===========================================
+
+  * Every tweak can be reverted with one click
+  * All tweaks are documented in the source code
+  * SHA256 checksums are published with each release
+  * You can verify the download at:
+      github.com/mohamedcherif-pixel/TheVault-PC-Optimizer/releases
+
+===========================================
+  PUBLISHER INFO
+===========================================
+
+  Publisher:  mohamedcherif-pixel
+  License:    MIT (free & open source)
+  Website:    github.com/mohamedcherif-pixel/TheVault-PC-Optimizer
+  Contact:    GitHub Issues page
+
+This software is provided AS-IS under the MIT License.
+Use at your own risk. Always create a system restore point first.

@@ -31,6 +31,27 @@ jobs:
       run: |
         iscc setup.iss
 
+    - name: Generate SHA256 Checksums
+      shell: pwsh
+      run: |
+        $exe = Get-FileHash "dist\TheVault_Optimizer.exe" -Algorithm SHA256
+        $setup = Get-FileHash "Output\TheVault_Setup.exe" -Algorithm SHA256
+        @"
+        # SHA256 Checksums
+
+        Verify your download is authentic by comparing these hashes.
+
+        ``````
+        $($exe.Hash)  TheVault_Optimizer.exe
+        $($setup.Hash)  TheVault_Setup.exe
+        ``````
+
+        **How to verify (PowerShell):**
+        ``````powershell
+        (Get-FileHash .\TheVault_Optimizer.exe -Algorithm SHA256).Hash
+        ``````
+        "@ | Out-File -FilePath "CHECKSUMS.txt" -Encoding utf8
+
     - name: Extract version from main.py
       id: get_version
       shell: bash
@@ -48,5 +69,6 @@ jobs:
         files: |
           dist/TheVault_Optimizer.exe
           Output/TheVault_Setup.exe
+          CHECKSUMS.txt
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

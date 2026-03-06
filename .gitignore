@@ -1,6 +1,50 @@
 __pycache__/
+*.pyc
 build/
 dist/
 .venv/
 env/
 Output/
+Output2/
+
+# User config (may contain API keys)
+normietools_config.json
+
+# Reverse engineering / extracted artifacts
+TheVault_Optimizer_Final.exe_extracted/
+leaked_source*.txt
+pyinstxtractor.py
+
+# Dev/audit/patch scripts
+add_reverts.py
+add_timers.py
+adder.py
+audit2.py
+auditor.py
+cat.py
+cat.txt
+check_revert.py
+check.py
+check2.py
+deep_fix.py
+fix_animations.py
+fix_cmd.py
+fix_dark.py
+fixer.py
+make_visible.py
+patcher.py
+recovered_main.py
+round*_patch*.py
+round*_audit*.py
+run_botva.py
+tester.py
+ver.py
+writer.py
+test_inno.ps1
+test_ps.ps1
+test_launch.py
+stop
+
+# Stale spec files
+PC_Optimizer.spec
+TheVault_Optimizer_Final.spec
