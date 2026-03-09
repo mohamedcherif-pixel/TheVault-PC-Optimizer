@@ -4607,6 +4607,24 @@ class OptimizerApp:
 
     def _loading_worker(self):
         """Background thread: loads system state and populates tweak checkboxes."""
+        try:
+            self._loading_worker_inner()
+        except Exception as e:
+            self._splash_log_append(f"[ERR] Loading failed: {e}", "red")
+            time.sleep(1)
+            # Still reveal main UI even if loading fails
+            def _reveal():
+                try:
+                    self._splash.destroy()
+                    self._splash_frames.clear()
+                except Exception:
+                    pass
+                self.root.deiconify()
+                self.root.state('zoomed')
+            self.root.after(0, _reveal)
+
+    def _loading_worker_inner(self):
+        """Actual loading logic."""
         from concurrent.futures import ThreadPoolExecutor
 
         self._splash_log_append("[SYS] NormieTools bootstrap sequence initiated", "cmd")
@@ -4616,11 +4634,13 @@ class OptimizerApp:
         # ── Step 1+2: Run bcdedit + PowerShell IN PARALLEL for speed ──
         def _bcdedit_task():
             try:
-                return subprocess.check_output(
+                result = subprocess.check_output(
                     "bcdedit /enum", shell=True, text=True,
                     creationflags=0x08000000, timeout=15
                 ).lower()
-            except Exception:
+                return result
+            except Exception as e:
+                self._splash_log_append(f"[WARN] bcdedit failed: {e}", "warn")
                 return ""
 
         def _ps_task():
@@ -4631,7 +4651,8 @@ class OptimizerApp:
                     text=True, creationflags=0x08000000, timeout=35
                 )
                 return json.loads(out)
-            except Exception:
+            except Exception as e:
+                self._splash_log_append(f"[WARN] powershell probe failed: {e}", "warn")
                 return {}
 
         self._splash_log_append("[CMD] bcdedit /enum", "cmd")
@@ -4641,10 +4662,16 @@ class OptimizerApp:
             fut_bcd = pool.submit(_bcdedit_task)
             fut_ps = pool.submit(_ps_task)
             self._bcdedit_cache = fut_bcd.result()
-            self._splash_log_append("[OK ] bcdedit cache loaded", "ok")
+            if self._bcdedit_cache:
+                self._splash_log_append("[OK ] bcdedit cache loaded", "ok")
+            else:
+                self._splash_log_append("[WARN] bcdedit returned empty (need admin?)", "warn")
             self._update_splash(pct=25)
             self._custom_cache = fut_ps.result()
-            self._splash_log_append("[OK ] powershell state captured", "ok")
+            if self._custom_cache:
+                self._splash_log_append("[OK ] powershell state captured", "ok")
+            else:
+                self._splash_log_append("[WARN] powershell probe empty (need admin?)", "warn")
             self._update_splash(pct=40)
 
         self._splash_log_append(f"[INF] cached keys: {len(self._custom_cache)}", "dim")
@@ -6698,8 +6725,16 @@ if (Test-Path $backup) {{ Remove-Item $backup -Force -ErrorAction SilentlyContin
 Move-Item -LiteralPath $targetExe -Destination $backup -Force
 Move-Item -LiteralPath $newExe    -Destination $targetExe -Force
 
-# Launch the new exe with a CLEAN environment (no _MEIPASS / stale PATH / PYTHONHOME)
-Start-Process -FilePath $targetExe -UseNewEnvironment
+# Brief pause to ensure filesystem settles
+Start-Sleep -Milliseconds 500
+
+# Clean stale PyInstaller env vars that could confuse the new process
+foreach ($v in @('_MEIPASS2', '_PYI_SPLASH_IPC', 'PYTHONHOME', 'PYTHONPATH')) {{
+    [System.Environment]::SetEnvironmentVariable($v, $null, 'Process')
+}}
+
+# Launch the new exe elevated (preserves admin rights from previous session)
+Start-Process -FilePath $targetExe -Verb RunAs
 
 # Self-delete scripts
 Remove-Item -LiteralPath '{vbs_script.replace("'", "''")}' -Force -ErrorAction SilentlyContinue
