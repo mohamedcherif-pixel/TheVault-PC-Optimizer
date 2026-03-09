@@ -2,6 +2,7 @@ import os, sys, ctypes, subprocess, threading, time
 import tkinter as tk
 from tkinter import messagebox
 import urllib.request
+import urllib.parse
 from urllib.parse import quote as urlquote
 import json
 import winreg
@@ -13,6 +14,7 @@ import webbrowser
 APP_VERSION = "v1.1.9"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 CONTACT_EMAIL = "medcherif2004@gmail.com"
+_DISCORD_WEBHOOK = ""  # Set your Discord webhook URL here for direct feedback
 
 SKIP_LOADING = False  # Set to True to skip the loading/splash screen
 
@@ -28,6 +30,16 @@ def _load_brevo_key():
             pass
     return key
 _BREVO_KEY = _load_brevo_key()
+
+def _load_discord_webhook():
+    if _DISCORD_WEBHOOK:
+        return _DISCORD_WEBHOOK
+    try:
+        with open(_CONFIG_PATH, "r") as f:
+            return json.loads(f.read()).get("discord_webhook", "")
+    except Exception:
+        return ""
+_DISCORD_WH = _load_discord_webhook()
 
 pygame = None
 
@@ -6024,18 +6036,51 @@ class OptimizerApp:
                     dialog.after(0, lambda: _on_success(False))
                     return
 
-                # ── Path B: GitHub Issue (always works, zero config) ──
-                title = urlquote(f"[{fb_type}] {subject}")
-                body_md = (f"**Type:** {fb_type}\n"
-                           f"**Rating:** {stars_str} ({rating}/5)\n"
-                           f"**Version:** {APP_VERSION}\n\n---\n\n"
-                           f"{message}")
-                issue_url = (f"https://github.com/{GITHUB_REPO}/issues/new"
-                             f"?title={title}"
-                             f"&body={urlquote(body_md)}"
-                             f"&labels=feedback")
-                webbrowser.open(issue_url)
-                dialog.after(0, lambda: _on_success(True))
+                # ── Path B: Discord Webhook (direct, no browser) ──
+                if _DISCORD_WH:
+                    embed = {
+                        "title": subject,
+                        "description": message[:2000],
+                        "color": 0xE53935,
+                        "fields": [
+                            {"name": "Type", "value": fb_type, "inline": True},
+                            {"name": "Rating", "value": f"{stars_str} ({rating}/5)", "inline": True},
+                            {"name": "Version", "value": APP_VERSION, "inline": True},
+                        ],
+                    }
+                    payload = json.dumps({"embeds": [embed]}).encode("utf-8")
+                    req = urllib.request.Request(
+                        _DISCORD_WH,
+                        data=payload,
+                        headers={"Content-Type": "application/json"},
+                    )
+                    urllib.request.urlopen(req, timeout=15)
+                    dialog.after(0, lambda: _on_success(False))
+                    return
+
+                # ── Path C: Email via Formsubmit (direct, no browser) ──
+                form_data = urllib.parse.urlencode({
+                    "name": f"NormieTools {APP_VERSION}",
+                    "email": "noreply@normietools.app",
+                    "message": body_text,
+                    "_subject": subject,
+                    "_captcha": "false",
+                    "_template": "box",
+                }).encode("utf-8")
+                req = urllib.request.Request(
+                    f"https://formsubmit.co/ajax/{CONTACT_EMAIL}",
+                    data=form_data,
+                    headers={
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "Accept": "application/json",
+                    },
+                )
+                resp = urllib.request.urlopen(req, timeout=15)
+                if resp.getcode() == 200:
+                    dialog.after(0, lambda: _on_success(False))
+                    return
+
+                raise RuntimeError("Formsubmit returned non-200")
 
             def _send_threaded():
                 try:
