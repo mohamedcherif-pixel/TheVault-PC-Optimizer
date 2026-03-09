@@ -11,7 +11,7 @@ import re
 import webbrowser
 
 # ════════════════════════════ App Version ═════════════════════════════
-APP_VERSION = "v2.0.2"
+APP_VERSION = "v2.0.3"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 CONTACT_EMAIL = "medcherif2004@gmail.com"
 _DISCORD_WEBHOOK = ""  # Set your Discord webhook URL here for direct feedback
@@ -6688,6 +6688,11 @@ class OptimizerApp:
                 if actual_size != total_size:
                     raise RuntimeError(f"Download corrupted: expected {total_size} bytes, got {actual_size}")
 
+            # Verify it's a valid PE executable (MZ header)
+            with open(temp_new_exe, 'rb') as _f:
+                if _f.read(2) != b'MZ':
+                    raise RuntimeError("Downloaded file is not a valid Windows executable")
+
             time.sleep(1)
 
             if getattr(sys, 'frozen', False):
@@ -6714,6 +6719,7 @@ class OptimizerApp:
 $targetExe  = '{current_exe.replace("'", "''")}' 
 $newExe     = '{temp_new_exe.replace("'", "''")}'
 $oldPID     = {current_pid}
+$expectedSize = {os.path.getsize(temp_new_exe)}
 
 # Wait for the old process to fully exit (up to 30 s)
 try {{
@@ -6725,14 +6731,31 @@ try {{
 
 Start-Sleep -Milliseconds 500
 
+# Clean stale PyInstaller _MEI temp dirs (older than 1 hour)
+Get-ChildItem $env:TEMP -Directory -Filter '_MEI*' -ErrorAction SilentlyContinue |
+    Where-Object {{ $_.LastWriteTime -lt (Get-Date).AddHours(-1) }} |
+    ForEach-Object {{ Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }}
+
+# Remove Zone.Identifier (Mark-of-the-Web) that blocks DLL loading
+Unblock-File -LiteralPath $newExe -ErrorAction SilentlyContinue
+
 # Swap the files
 $backup = $targetExe + '.patch_old'
 if (Test-Path $backup) {{ Remove-Item $backup -Force -ErrorAction SilentlyContinue }}
 Move-Item -LiteralPath $targetExe -Destination $backup -Force
 Move-Item -LiteralPath $newExe    -Destination $targetExe -Force
 
-# Brief pause to ensure filesystem settles
-Start-Sleep -Milliseconds 500
+# Verify the swap succeeded
+if (-not (Test-Path $targetExe)) {{
+    if (Test-Path $backup) {{ Move-Item -LiteralPath $backup -Destination $targetExe -Force }}
+    exit 1
+}}
+
+# Remove Zone.Identifier from final location too
+Unblock-File -LiteralPath $targetExe -ErrorAction SilentlyContinue
+
+# Generous pause for filesystem + OneDrive sync to settle
+Start-Sleep -Milliseconds 1500
 
 # Clean stale PyInstaller env vars that could confuse the new process
 foreach ($v in @('_MEIPASS2', '_PYI_SPLASH_IPC', 'PYTHONHOME', 'PYTHONPATH')) {{
