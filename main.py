@@ -241,7 +241,6 @@ TOOL_ICONS = {
     "Install Paint.NET": "🎨",
     "Install Double Commander": "📁",
     "Launch Wallpaper Engine": "🖼",
-    "Launch WE-Downloader": "⬇",
 }
 
 TOOL_SUBCATEGORIES = {
@@ -308,7 +307,6 @@ TOOL_SUBCATEGORIES = {
         "Install Rainmeter",
         "Install ImageGlass",
         "Launch Wallpaper Engine",
-        "Launch WE-Downloader",
     ],
     "\U0001F6E0 Dev & Power Tools": [
         "Install PowerToys", "Install DevToys", "Install x64dbg",
@@ -812,7 +810,6 @@ TWEAK_NAMES = {
     "Enable Verbose Boot Status Messages": {"en": "Enable Verbose Boot Status Messages", "fr": "Activer les messages de démarrage détaillés", "tn": "Activer messages démarrage détaillés", "es": "Activar mensajes de arranque detallados", "de": "Ausführliche Startmeldungen aktivieren", "ar": "تفعيل رسائل الإقلاع التفصيلية"},
     "Disable Snap Layouts Flyout (Win 11)": {"en": "Disable Snap Layouts Flyout (Win 11)", "fr": "Désactiver le menu Snap Layouts (Win 11)", "tn": "Ytaffi Snap Layouts flyout (Win 11)", "es": "Desactivar menú Snap Layouts (Win 11)", "de": "Snap-Layouts-Flyout deaktivieren (Win 11)", "ar": "تعطيل قائمة Snap Layouts (Win 11)"},
     "Launch Wallpaper Engine": {"en": "Launch Wallpaper Engine", "fr": "Lancer Wallpaper Engine", "tn": "Lancer Wallpaper Engine", "es": "Iniciar Wallpaper Engine", "de": "Wallpaper Engine starten", "ar": "تشغيل Wallpaper Engine"},
-    "Launch WE-Downloader": {"en": "Launch WE-Downloader", "fr": "Lancer WE-Downloader", "tn": "Lancer WE-Downloader", "es": "Iniciar WE-Downloader", "de": "WE-Downloader starten", "ar": "تشغيل WE-Downloader"},
 }
 
 TWEAK_DESCS = {
@@ -1176,8 +1173,7 @@ TWEAK_DESCS = {
     "Clean Shader Cache (DirectX, NVIDIA, AMD)": {'en': 'Deletes compiled shader caches for DirectX, NVIDIA, and AMD. Forces fresh shader compilation — fixes corrupted artifacts and stuttering from stale cache. Games rebuild caches automatically.', 'fr': 'Supprime les caches de shaders compilés DirectX, NVIDIA, AMD. Force une recompilation — corrige artefacts et saccades. Les jeux reconstruisent automatiquement.', 'tn': 'Yna77i caches shaders compilés DirectX, NVIDIA, AMD. Yforci recompilation — ysalah artefacts w saccades. Jeux y3awdou bniwhom.', 'es': 'Elimina cachés de shaders compilados DirectX, NVIDIA, AMD. Fuerza recompilación — corrige artefactos y stuttering. Los juegos reconstruyen automáticamente.', 'de': 'Löscht kompilierte Shader-Caches für DirectX, NVIDIA, AMD. Erzwingt Neukompilierung — behebt Artefakte und Stottern.', 'ar': 'يحذف ذاكرة التظليل المترجمة لـ DirectX وNVIDIA وAMD. يفرض ترجمة جديدة — يصلح التشوهات والتلعثم.'},
     "Enable Verbose Boot Status Messages": {'en': 'Shows detailed service startup/shutdown messages during boot instead of the Windows logo. See exactly which service is starting or stopping. Great for diagnosing slow boots.', 'fr': 'Affiche les messages détaillés de démarrage/arrêt des services au lieu du logo Windows. Idéal pour diagnostiquer les démarrages lents.', 'tn': 'Ywari messages détaillés démarrage/arrêt services blasa logo Windows. Ysa3dek tdiagnostiki démarrages lents.', 'es': 'Muestra mensajes detallados de inicio/cierre de servicios en lugar del logo Windows. Ideal para diagnosticar arranques lentos.', 'de': 'Zeigt detaillierte Dienst-Start-/Stopp-Meldungen beim Booten statt Windows-Logo. Ideal für langsame Boot-Diagnose.', 'ar': 'يعرض رسائل تفصيلية لبدء/إيقاف الخدمات أثناء الإقلاع بدلاً من شعار Windows. رائع لتشخيص الإقلاع البطيء.'},
     "Disable Snap Layouts Flyout (Win 11)": {'en': 'Removes the snap layout grid popup when hovering over the maximize button in Windows 11. Prevents accidental window snapping. Keyboard users prefer this off.', 'fr': 'Supprime le popup de grille Snap Layouts au survol du bouton maximiser dans Windows 11. Empêche le snap accidentel.', 'tn': 'Yna77i popup grille Snap Layouts ki thoveri 3la bouton maximiser fi Win 11. Ymanea snap accidentel.', 'es': 'Elimina la cuadrícula Snap Layouts al pasar sobre el botón maximizar en Windows 11. Evita snapping accidental.', 'de': 'Entfernt das Snap-Layout-Popup beim Hover über den Maximieren-Button in Windows 11. Verhindert versehentliches Snappen.', 'ar': 'يزيل نافذة تخطيطات Snap عند التمرير فوق زر التكبير في Windows 11. يمنع التثبيت العرضي.'},
-    "Launch Wallpaper Engine": {'en': 'Launches Wallpaper Engine from the NormieTools directory. Set videos, GIFs, and interactive scenes as your desktop wallpaper. Place the WallpaperEngine folder next to NormieTools.exe.', 'fr': 'Lance Wallpaper Engine depuis le dossier NormieTools. Définissez vidéos, GIFs et scènes interactives comme fond d\'écran.', 'tn': 'Ylanci Wallpaper Engine men dossier NormieTools. 7ot vidéos, GIFs w scènes interactives ka fond d\'écran.', 'es': 'Inicia Wallpaper Engine desde la carpeta NormieTools. Establece vídeos, GIFs y escenas interactivas como fondo.', 'de': 'Startet Wallpaper Engine aus dem NormieTools-Verzeichnis. Videos, GIFs und interaktive Szenen als Desktop-Hintergrund.', 'ar': 'يشغل Wallpaper Engine من مجلد NormieTools. اجعل الفيديو والصور المتحركة والمشاهد التفاعلية خلفية سطح مكتبك.'},
-    "Launch WE-Downloader": {'en': 'Launches WE-Downloader to browse and download live wallpapers from Steam Workshop. Place the WE-Downloader folder next to NormieTools.exe.', 'fr': 'Lance WE-Downloader pour parcourir et télécharger des fonds d\'écran animés depuis le Steam Workshop.', 'tn': 'Ylanci WE-Downloader bash tbrowsi w tna99as fonds écran animés men Steam Workshop.', 'es': 'Inicia WE-Downloader para explorar y descargar fondos de pantalla animados de Steam Workshop.', 'de': 'Startet WE-Downloader zum Durchsuchen und Herunterladen von Live-Wallpapers aus dem Steam Workshop.', 'ar': 'يشغل WE-Downloader لتصفح وتنزيل خلفيات حية من Steam Workshop.'},
+    "Launch Wallpaper Engine": {'en': 'Launches Wallpaper Engine with WE-Downloader from the NormieTools directory. Set videos, GIFs, and interactive scenes as your desktop wallpaper. WE-Downloader lets you browse and download live wallpapers from Steam Workshop.', 'fr': 'Lance Wallpaper Engine avec WE-Downloader depuis le dossier NormieTools. Définissez vidéos, GIFs et scènes interactives comme fond d\'écran. WE-Downloader permet de télécharger des fonds animés depuis Steam Workshop.', 'tn': 'Ylanci Wallpaper Engine w WE-Downloader men dossier NormieTools. 7ot vidéos, GIFs w scènes interactives ka fond d\'écran. WE-Downloader yna99aslek fonds animés men Steam Workshop.', 'es': 'Inicia Wallpaper Engine con WE-Downloader desde la carpeta NormieTools. Establece vídeos, GIFs y escenas interactivas como fondo. WE-Downloader permite descargar fondos animados de Steam Workshop.', 'de': 'Startet Wallpaper Engine mit WE-Downloader aus dem NormieTools-Verzeichnis. Videos, GIFs und interaktive Szenen als Desktop-Hintergrund. WE-Downloader lädt Live-Wallpapers aus dem Steam Workshop.', 'ar': 'يشغل Wallpaper Engine مع WE-Downloader من مجلد NormieTools. اجعل الفيديو والصور المتحركة والمشاهد التفاعلية خلفية سطح مكتبك. WE-Downloader يتصفح وينزل خلفيات حية من Steam Workshop.'},
 }
 
 _current_lang = "en"
@@ -4336,17 +4332,10 @@ CATEGORIES = {
             },
             {
                 "name": "Launch Wallpaper Engine",
-                "desc": "Launches Wallpaper Engine from the NormieTools directory. Set videos, GIFs, and interactive scenes as your desktop wallpaper. Place the WallpaperEngine folder next to NormieTools.exe.",
+                "desc": "Launches Wallpaper Engine with WE-Downloader from the NormieTools directory. Set videos, GIFs, and interactive scenes as your desktop wallpaper. WE-Downloader lets you browse and download live wallpapers from Steam Workshop.",
                 "risk": SAFE,
                 "cmds": [
                     'if exist "%ProgramFiles%\\NormieTools\\WallpaperEngine\\launcher.exe" (start "" "%ProgramFiles%\\NormieTools\\WallpaperEngine\\launcher.exe") else (echo [!] Wallpaper Engine not found. & echo     Place the WallpaperEngine folder in %ProgramFiles%\\NormieTools\\ & echo. & pause)',
-                ],
-            },
-            {
-                "name": "Launch WE-Downloader",
-                "desc": "Launches WE-Downloader to browse and download live wallpapers from Steam Workshop. Place the WE-Downloader folder next to NormieTools.exe.",
-                "risk": SAFE,
-                "cmds": [
                     'if exist "%ProgramFiles%\\NormieTools\\WE-Downloader\\WE-Downloader-alexjoneso.exe" (start "" "%ProgramFiles%\\NormieTools\\WE-Downloader\\WE-Downloader-alexjoneso.exe") else (echo [!] WE-Downloader not found. & echo     Place the WE-Downloader folder in %ProgramFiles%\\NormieTools\\ & echo. & pause)',
                 ],
             },
