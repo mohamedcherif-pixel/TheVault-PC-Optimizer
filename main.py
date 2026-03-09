@@ -17,8 +17,17 @@ CONTACT_EMAIL = "medcherif2004@gmail.com"
 SKIP_LOADING = False  # Set to True to skip the loading/splash screen
 
 _CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "normietools_config.json")
-_BREVO_KEY = os.environ.get("BREVO_API_KEY", "")
 _BREVO_SENDER = "medcherif2004@gmail.com"
+def _load_brevo_key():
+    key = os.environ.get("BREVO_API_KEY", "")
+    if not key:
+        try:
+            with open(_CONFIG_PATH, "r") as f:
+                key = json.loads(f.read()).get("brevo_api_key", "")
+        except Exception:
+            pass
+    return key
+_BREVO_KEY = _load_brevo_key()
 
 pygame = None
 
@@ -369,6 +378,8 @@ TRANSLATIONS = {
     "fb_empty_msg":     {"en": "Please write a message before sending.", "fr": "Veuillez écrire un message avant d'envoyer.", "tn": "Ouktob rissala 9bal ma tab3ath.", "es": "Escribe un mensaje antes de enviar.", "de": "Bitte schreiben Sie eine Nachricht.", "ar": "يرجى كتابة رسالة قبل الإرسال."},
     "fb_sent_title":    {"en": "Feedback", "fr": "Retour", "tn": "Ra2y", "es": "Opinión", "de": "Feedback", "ar": "ملاحظات"},
     "fb_sent_msg":      {"en": "Feedback sent successfully!\nThank you for your input.", "fr": "Retour envoyé avec succès !\nMerci pour votre contribution.", "tn": "Ra2yek twassal! Chokran.", "es": "¡Opinión enviada con éxito!\nGracias.", "de": "Feedback erfolgreich gesendet!\nVielen Dank.", "ar": "تم إرسال الملاحظات بنجاح!\nشكراً لك."},
+    "fb_sent_browser":  {"en": "Your feedback has been prepared as a GitHub issue.\nPlease click 'Submit new issue' in your browser to complete.", "fr": "Votre retour a été préparé sur GitHub.\nCliquez sur 'Submit new issue' dans votre navigateur.", "tn": "Ra2yek mawjoud fi GitHub.\nA3mel Submit.", "es": "Tu opinión se ha preparado en GitHub.\nHaz clic en 'Submit new issue' en tu navegador.", "de": "Ihr Feedback wurde als GitHub-Issue vorbereitet.\nKlicken Sie auf 'Submit new issue' in Ihrem Browser.", "ar": "تم تجهيز ملاحظاتك كقضية GitHub.\nانقر على 'Submit new issue' في المتصفح."},
+    "fb_sending":       {"en": "SENDING...", "fr": "ENVOI...", "tn": "YAB3ATH...", "es": "ENVIANDO...", "de": "SENDEN...", "ar": "...جاري الإرسال"},
     "fb_err_title":     {"en": "Error", "fr": "Erreur", "tn": "Ghalta", "es": "Error", "de": "Fehler", "ar": "خطأ"},
     "fb_err_msg":       {"en": "Could not send feedback:\n{e}", "fr": "Impossible d'envoyer le retour :\n{e}", "tn": "Ma najamtch nab3ath el ra2y:\n{e}", "es": "No se pudo enviar la opinión:\n{e}", "de": "Feedback konnte nicht gesendet werden:\n{e}", "ar": "تعذر إرسال الملاحظات:\n{e}"},
     "fb_rating_set":    {"en": "Current Rating: {s} ({n}/5)", "fr": "Note actuelle : {s} ({n}/5)", "tn": "Note actuelle : {s} ({n}/5)", "es": "Puntuación actual: {s} ({n}/5)", "de": "Aktuelle Bewertung: {s} ({n}/5)", "ar": "التقييم الحالي: {s} ({n}/5)"},
@@ -5229,10 +5240,21 @@ class OptimizerApp:
     def _ai_show_welcome(self):
         self._ai_chat.configure(state="normal")
         self._ai_chat.delete("1.0", "end")
-        self._ai_chat.insert("end", "AI ASSISTANT\n\n", "ai")
-        self._ai_chat.insert("end",
-            "Describe your PC problem and I'll recommend\n"
-            "the best tools and tweaks.\n", "msg")
+        if not self._ai_api_key:
+            self._ai_chat.insert("end", "AI ASSISTANT - SETUP\n\n", "ai")
+            self._ai_chat.insert("end",
+                "To use the free AI features, you need an API key.\n\n"
+                "Setup (takes 30 seconds):\n"
+                "  1. Go to aistudio.google.com/apikey (or groq.com)\n"
+                "  2. Create a free API key\n"
+                "  3. Paste your key below and press SEND\n\n", "msg")
+            self._ai_chat.insert("end",
+                "Your key is saved locally in the config.\n", "dim")
+        else:
+            self._ai_chat.insert("end", "AI ASSISTANT\n\n", "ai")
+            self._ai_chat.insert("end",
+                "Describe your PC problem and I'll recommend\n"
+                "the best tools and tweaks.\n", "msg")
         self._ai_chat.configure(state="disabled")
 
     def _ai_send(self):
@@ -5240,6 +5262,24 @@ class OptimizerApp:
         if not text:
             return
         self._ai_input_var.set("")
+
+        if not self._ai_api_key:
+            if len(text) > 20 and ("AIza" in text or text.startswith("gsk_") or "csk" in text):
+                self._save_ai_key(text)
+                self._ai_chat.configure(state="normal")
+                self._ai_chat.delete("1.0", "end")
+                self._ai_chat.insert("end", "AI ASSISTANT\n\n", "ai")
+                self._ai_chat.insert("end",
+                    "API key saved. Ask me anything about your PC.\n", "msg")
+                self._ai_chat.configure(state="disabled")
+                return
+            else:
+                self._ai_chat.configure(state="normal")
+                self._ai_chat.insert("end",
+                    "\nPaste a valid Gemini, Groq, Cerebras, or Cohere API key.\n", "dim")
+                self._ai_chat.configure(state="disabled")
+                self._ai_chat.see("end")
+                return
 
         self._ai_chat.configure(state="normal")
         self._ai_chat.insert("end", f"\nYOU: ", "you")
@@ -5310,11 +5350,8 @@ class OptimizerApp:
         {"n": "Groq Llama 3.1 8B", "u": "https://api.groq.com/openai/v1/chat/completions", "m": "llama-3.1-8b-instant", "k": "groq"},
         {"n": "Cerebras Llama 3.1 8B", "u": "https://api.cerebras.ai/v1/chat/completions", "m": "llama3.1-8b", "k": "cerebras"},
         {"n": "Gemini 2.5 Flash", "u": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "m": "gemini-2.5-flash", "k": "gemini"},
-        {"n": "Gemini 2.5 Flash-Lite", "u": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "m": "gemini-2.5-flash-lite", "k": "gemini"},
-        {"n": "Gemini 3 Flash", "u": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "m": "gemini-3-flash-preview", "k": "gemini"},
-        {"n": "Gemini 3.1 Flash-Lite", "u": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "m": "gemini-3.1-flash-lite-preview", "k": "gemini"},
         {"n": "Gemini 2.0 Flash", "u": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "m": "gemini-2.0-flash", "k": "gemini"},
-        {"n": "Gemini 2.5 Pro", "u": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "m": "gemini-2.5-pro", "k": "gemini"},
+        {"n": "Gemini 1.5 Flash", "u": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "m": "gemini-1.5-flash", "k": "gemini"},
         {"n": "Cohere Command A", "u": "https://api.cohere.com/v2/chat", "m": "command-a-03-2025", "k": "cohere", "co": True},
     ]
 
@@ -5443,7 +5480,13 @@ class OptimizerApp:
         for p in providers:
             if self._ai_get_remaining(p["n"]) <= 0:
                 continue
-            api_key = (self._ai_api_key or self._AI_FALLBACK_KEYS.get("gemini", "")) if p["k"] == "gemini" else self._AI_FALLBACK_KEYS.get(p["k"], "")
+            api_key = self._AI_FALLBACK_KEYS.get(p["k"], "")
+            if self._ai_api_key:
+                if self._ai_api_key.startswith("AIza") and p["k"] == "gemini": api_key = self._ai_api_key
+                elif self._ai_api_key.startswith("gsk_") and p["k"] == "groq": api_key = self._ai_api_key
+                elif self._ai_api_key.startswith("csk") and p["k"] == "cerebras": api_key = self._ai_api_key
+                elif not (self._ai_api_key.startswith("AIza") or self._ai_api_key.startswith("gsk_") or self._ai_api_key.startswith("csk")) and p["k"] == "cohere": api_key = self._ai_api_key
+
             if not api_key:
                 continue
 
@@ -5470,18 +5513,28 @@ class OptimizerApp:
                         self.root.after(0, self._ai_update_model_menu)
                         return (p["n"], text)
             except urllib.error.HTTPError as e:
-                if e.code in (401, 403) and p["k"] == "gemini":
-                    self._ai_api_key = ""
-                    return (None, "Invalid API key. Re-enter your key.")
-                if e.code in (429, 400, 503, 502):
-                    last_err = f"{p['n']} busy"
+                body = ""
+                try:
+                    body = e.read().decode("utf-8", errors="replace")
+                except:
+                    pass
+                if e.code in (401, 403):
+                    if p["k"] == "gemini":
+                        self._ai_api_key = ""
+                    last_err = f"API Key error: {body[:100]}"
+                    return (None, f"Invalid API key for {p['n']}. Re-enter your key.")
+                if e.code in (429, 503, 502):
+                    last_err = f"{p['n']} busy/rate-limited"
                     continue
-                last_err = f"{p['n']}: HTTP {e.code}"
+                if e.code == 400:
+                    last_err = f"{p['n']} model invalid. Body: {body[:100]}"
+                    continue
+                last_err = f"{p['n']}: HTTP {e.code} - {body[:100]}"
                 continue
             except Exception as e:
                 last_err = str(e)[:80]
                 continue
-        return None
+        return (None, last_err if last_err else "No valid API keys. Re-enter your key.")
 
     def _ai_call_fallback(self):
         system_prompt = self._ai_build_system_prompt()
@@ -5491,8 +5544,9 @@ class OptimizerApp:
 
         # First API call
         result = self._ai_do_single_call(messages)
-        if not result:
-            return (None, "All AI models busy. Try again in a minute.")
+        if not result or not result[0]:
+            err_msg = result[1] if result else "Unknown error"
+            return (None, f"All AI models busy. Try again in a minute.\n\nDebug Info: {err_msg}")
         model_name, response = result
 
         # Check for scan tool calls
@@ -5599,6 +5653,20 @@ class OptimizerApp:
         msg_text.bind("<FocusOut>", on_focus_out)
 
         # ════════════════════════════ Send Button ═════════════════════════════
+        btn_frame = tk.Frame(dialog, bg=BG_D)
+        btn_frame.pack(fill="x", padx=25, pady=(0, 15))
+
+        send_btn = tk.Button(btn_frame, text=_t("fb_send"), font=("Arial Black", 10),
+                  bg=ACCENT_RED, fg="#000000", relief="flat", cursor="hand2",
+                  activebackground=ACCENT_CYAN, activeforeground="#000000")
+        send_btn.pack(side="right", ipadx=12, ipady=3)
+
+        abort_btn = tk.Button(btn_frame, text=_t("fb_abort"), font=("Courier New", 9, "bold"),
+                  bg="#111111", fg="#888888", relief="flat", cursor="hand2",
+                  activebackground=ACCENT_RED, activeforeground="#000000",
+                  command=dialog.destroy)
+        abort_btn.pack(side="right", padx=10)
+
         def send_feedback():
             rating = self.rating_var.get()
             fb_type = type_var.get()
@@ -5609,61 +5677,81 @@ class OptimizerApp:
                                        _t("fb_empty_msg"), parent=dialog)
                 return
 
+            # Disable buttons and show sending state
+            send_btn.configure(text=_t("fb_sending"), state="disabled",
+                               bg="#555555", cursor="arrow")
+            abort_btn.configure(state="disabled")
+            msg_text.configure(state="disabled")
+
             stars_str = "\u2605" * rating + "\u2606" * (5 - rating)
             subject = f"[NormieOptimizer {APP_VERSION}] {fb_type}"
             if rating > 0:
                 subject += f" - {stars_str}"
 
-            body = (f"Type: {fb_type}\n"
-                    f"Rating: {stars_str} ({rating}/5)\n"
-                    f"Version: {APP_VERSION}\n"
-                    f"{'=' * 40}\n\n"
-                    f"{message}")
+            body_text = (f"Type: {fb_type}\n"
+                         f"Rating: {stars_str} ({rating}/5)\n"
+                         f"Version: {APP_VERSION}\n"
+                         f"{'=' * 40}\n\n"
+                         f"{message}")
+
+            def _on_success(via_browser=False):
+                msg = _t("fb_sent_browser") if via_browser else _t("fb_sent_msg")
+                messagebox.showinfo(_t("fb_sent_title"), msg, parent=dialog)
+                dialog.destroy()
+
+            def _on_error(ex):
+                send_btn.configure(text=_t("fb_send"), state="normal",
+                                   bg=ACCENT_RED, cursor="hand2")
+                abort_btn.configure(state="normal")
+                msg_text.configure(state="normal")
+                messagebox.showerror(_t("fb_err_title"),
+                                     _t("fb_err_msg", e=ex), parent=dialog)
 
             def _do_send():
-                payload = {
-                    "sender": {"name": "NormieTools Feedback", "email": _BREVO_SENDER},
-                    "to": [{"email": CONTACT_EMAIL}],
-                    "subject": subject,
-                    "textContent": body,
-                }
-                req = urllib.request.Request(
-                    "https://api.brevo.com/v3/smtp/email",
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers={
-                        "api-key": _BREVO_KEY,
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                    },
-                )
-                urllib.request.urlopen(req, timeout=15)
-                dialog.after(0, lambda: (
-                    messagebox.showinfo(_t("fb_sent_title"),
-                        _t("fb_sent_msg"), parent=dialog),
-                    dialog.destroy(),
-                ))
+                # ── Path A: Brevo API (if key is configured) ──
+                if _BREVO_KEY:
+                    payload = {
+                        "sender": {"name": "NormieTools Feedback",
+                                   "email": _BREVO_SENDER},
+                        "to": [{"email": CONTACT_EMAIL}],
+                        "subject": subject,
+                        "textContent": body_text,
+                    }
+                    req = urllib.request.Request(
+                        "https://api.brevo.com/v3/smtp/email",
+                        data=json.dumps(payload).encode("utf-8"),
+                        headers={
+                            "api-key": _BREVO_KEY,
+                            "Content-Type": "application/json",
+                            "Accept": "application/json",
+                        },
+                    )
+                    urllib.request.urlopen(req, timeout=15)
+                    dialog.after(0, lambda: _on_success(False))
+                    return
+
+                # ── Path B: GitHub Issue (always works, zero config) ──
+                title = urlquote(f"[{fb_type}] {subject}")
+                body_md = (f"**Type:** {fb_type}\n"
+                           f"**Rating:** {stars_str} ({rating}/5)\n"
+                           f"**Version:** {APP_VERSION}\n\n---\n\n"
+                           f"{message}")
+                issue_url = (f"https://github.com/{GITHUB_REPO}/issues/new"
+                             f"?title={title}"
+                             f"&body={urlquote(body_md)}"
+                             f"&labels=feedback")
+                webbrowser.open(issue_url)
+                dialog.after(0, lambda: _on_success(True))
 
             def _send_threaded():
                 try:
                     _do_send()
                 except Exception as ex:
-                    dialog.after(0, lambda e=ex: messagebox.showerror(
-                        _t("fb_err_title"), _t("fb_err_msg", e=e), parent=dialog))
+                    dialog.after(0, lambda e=ex: _on_error(e))
 
             threading.Thread(target=_send_threaded, daemon=True).start()
 
-        btn_frame = tk.Frame(dialog, bg=BG_D)
-        btn_frame.pack(fill="x", padx=25, pady=(0, 15))
-
-        tk.Button(btn_frame, text=_t("fb_send"), font=("Arial Black", 10),
-                  bg=ACCENT_RED, fg="#000000", relief="flat", cursor="hand2",
-                  activebackground=ACCENT_CYAN, activeforeground="#000000",
-                  command=send_feedback).pack(side="right", ipadx=12, ipady=3)
-
-        tk.Button(btn_frame, text=_t("fb_abort"), font=("Courier New", 9, "bold"),
-                  bg="#111111", fg="#888888", relief="flat", cursor="hand2",
-                  activebackground=ACCENT_RED, activeforeground="#000000",
-                  command=dialog.destroy).pack(side="right", padx=10)
+        send_btn.configure(command=send_feedback)
 
     def _scan_applied_tweaks(self):
         """Now handled by _loading_worker at startup. Kept as no-op for compatibility."""
