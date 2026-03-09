@@ -240,6 +240,8 @@ TOOL_ICONS = {
     "Install qBittorrent": "🌀",
     "Install Paint.NET": "🎨",
     "Install Double Commander": "📁",
+    "Launch Wallpaper Engine": "🖼",
+    "Launch WE-Downloader": "⬇",
 }
 
 TOOL_SUBCATEGORIES = {
@@ -305,6 +307,8 @@ TOOL_SUBCATEGORIES = {
         "Install ContextMenuManager", "Install Lively Wallpaper",
         "Install Rainmeter",
         "Install ImageGlass",
+        "Launch Wallpaper Engine",
+        "Launch WE-Downloader",
     ],
     "\U0001F6E0 Dev & Power Tools": [
         "Install PowerToys", "Install DevToys", "Install x64dbg",
@@ -792,6 +796,23 @@ TWEAK_NAMES = {
     "Disable Application Impact Telemetry (AIT)": {"en": "Disable Application Impact Telemetry (AIT)", "fr": "Désactiver la télémétrie d'impact des applications (AIT)", "tn": "Ytaffi AIT (telemetrie impact applications)", "es": "Desactivar telemetría de impacto de aplicaciones (AIT)", "de": "Application Impact Telemetrie (AIT) deaktivieren", "ar": "تعطيل قياس تأثير التطبيقات (AIT)"},
     "Disable Taskbar Search Box & Highlights": {"en": "Disable Taskbar Search Box & Highlights", "fr": "Désactiver la boîte de recherche et les highlights de la barre des tâches", "tn": "Ytaffi search box w highlights mel taskbar", "es": "Desactivar cuadro de búsqueda y destacados de la barra de tareas", "de": "Taskleisten-Suchfeld & Highlights deaktivieren", "ar": "تعطيل مربع البحث والإبرازات في شريط المهام"},
     "Disable News & Interests Widget": {"en": "Disable News & Interests Widget", "fr": "Désactiver le widget Actualités et centres d'intérêt", "tn": "Ytaffi widget News & Interests mel taskbar", "es": "Desactivar widget de Noticias e Intereses", "de": "Neuigkeiten & Interessen Widget deaktivieren", "ar": "تعطيل أداة الأخبار والاهتمامات"},
+    "Disable Automatic Maintenance": {"en": "Disable Automatic Maintenance", "fr": "Désactiver la maintenance automatique", "tn": "Ytaffi maintenance automatique", "es": "Desactivar mantenimiento automático", "de": "Automatische Wartung deaktivieren", "ar": "تعطيل الصيانة التلقائية"},
+    "Disable Storage Sense (Auto Disk Cleanup)": {"en": "Disable Storage Sense (Auto Disk Cleanup)", "fr": "Désactiver l'assistant de stockage", "tn": "Ytaffi Storage Sense (nettoyage auto)", "es": "Desactivar Sensor de almacenamiento", "de": "Speicheroptimierung deaktivieren", "ar": "تعطيل مستشعر التخزين (التنظيف التلقائي)"},
+    "Set GPU Thread Priority to Maximum": {"en": "Set GPU Thread Priority to Maximum", "fr": "Priorité GPU maximale", "tn": "GPU Priority lel maximum", "es": "Prioridad GPU al máximo", "de": "GPU-Thread-Priorität auf Maximum", "ar": "تعيين أولوية GPU للحد الأقصى"},
+    "Force High Performance NVIDIA Power Management": {"en": "Force High Performance NVIDIA Power Management", "fr": "Forcer la gestion d'alimentation NVIDIA haute performance", "tn": "Forcer NVIDIA haute performance", "es": "Forzar gestión de energía NVIDIA alto rendimiento", "de": "NVIDIA Hochleistungs-Energieverwaltung erzwingen", "ar": "فرض إدارة طاقة NVIDIA عالية الأداء"},
+    "Disable LMHOSTS Lookup": {"en": "Disable LMHOSTS Lookup", "fr": "Désactiver la recherche LMHOSTS", "tn": "Ytaffi LMHOSTS lookup", "es": "Desactivar búsqueda LMHOSTS", "de": "LMHOSTS-Suche deaktivieren", "ar": "تعطيل بحث LMHOSTS"},
+    "Disable SMBv1 Protocol (Security Hardening)": {"en": "Disable SMBv1 Protocol (Security Hardening)", "fr": "Désactiver le protocole SMBv1", "tn": "Ytaffi protocole SMBv1", "es": "Desactivar protocolo SMBv1", "de": "SMBv1-Protokoll deaktivieren", "ar": "تعطيل بروتوكول SMBv1"},
+    "Disable Activity History / Timeline": {"en": "Disable Activity History / Timeline", "fr": "Désactiver l'historique des activités", "tn": "Ytaffi historique activités / Timeline", "es": "Desactivar historial de actividades", "de": "Aktivitätsverlauf deaktivieren", "ar": "تعطيل سجل النشاط"},
+    "Disable Find My Device": {"en": "Disable Find My Device", "fr": "Désactiver Localiser mon appareil", "tn": "Ytaffi Find My Device", "es": "Desactivar Encontrar mi dispositivo", "de": "Mein Gerät suchen deaktivieren", "ar": "تعطيل العثور على جهازي"},
+    "Disable Settings Sync to Microsoft": {"en": "Disable Settings Sync to Microsoft", "fr": "Désactiver la synchronisation des paramètres", "tn": "Ytaffi sync paramètres lel Microsoft", "es": "Desactivar sincronización de configuración", "de": "Einstellungssynchronisierung deaktivieren", "ar": "تعطيل مزامنة الإعدادات"},
+    "Disable Windows Spotlight (Lock Screen Ads)": {"en": "Disable Windows Spotlight (Lock Screen Ads)", "fr": "Désactiver Windows Spotlight (pubs écran verrouillage)", "tn": "Ytaffi Windows Spotlight (pubs lock screen)", "es": "Desactivar Windows Spotlight (anuncios pantalla bloqueo)", "de": "Windows-Blickpunkt deaktivieren (Sperrbildschirm-Werbung)", "ar": "تعطيل Windows Spotlight (إعلانات شاشة القفل)"},
+    "Disable Remote Registry Service": {"en": "Disable Remote Registry Service", "fr": "Désactiver le registre distant", "tn": "Ytaffi Remote Registry", "es": "Desactivar registro remoto", "de": "Remoteregistrierungsdienst deaktivieren", "ar": "تعطيل خدمة التسجيل عن بُعد"},
+    "Disable Distributed Transaction Coordinator": {"en": "Disable Distributed Transaction Coordinator", "fr": "Désactiver le coordinateur de transactions", "tn": "Ytaffi MSDTC", "es": "Desactivar coordinador de transacciones", "de": "Verteilter Transaktionskoordinator deaktivieren", "ar": "تعطيل منسق المعاملات الموزعة"},
+    "Clean Shader Cache (DirectX, NVIDIA, AMD)": {"en": "Clean Shader Cache (DirectX, NVIDIA, AMD)", "fr": "Nettoyer le cache shaders (DirectX, NVIDIA, AMD)", "tn": "Nettoyer cache shaders (DirectX, NVIDIA, AMD)", "es": "Limpiar caché de shaders (DirectX, NVIDIA, AMD)", "de": "Shader-Cache bereinigen (DirectX, NVIDIA, AMD)", "ar": "تنظيف ذاكرة التظليل (DirectX, NVIDIA, AMD)"},
+    "Enable Verbose Boot Status Messages": {"en": "Enable Verbose Boot Status Messages", "fr": "Activer les messages de démarrage détaillés", "tn": "Activer messages démarrage détaillés", "es": "Activar mensajes de arranque detallados", "de": "Ausführliche Startmeldungen aktivieren", "ar": "تفعيل رسائل الإقلاع التفصيلية"},
+    "Disable Snap Layouts Flyout (Win 11)": {"en": "Disable Snap Layouts Flyout (Win 11)", "fr": "Désactiver le menu Snap Layouts (Win 11)", "tn": "Ytaffi Snap Layouts flyout (Win 11)", "es": "Desactivar menú Snap Layouts (Win 11)", "de": "Snap-Layouts-Flyout deaktivieren (Win 11)", "ar": "تعطيل قائمة Snap Layouts (Win 11)"},
+    "Launch Wallpaper Engine": {"en": "Launch Wallpaper Engine", "fr": "Lancer Wallpaper Engine", "tn": "Lancer Wallpaper Engine", "es": "Iniciar Wallpaper Engine", "de": "Wallpaper Engine starten", "ar": "تشغيل Wallpaper Engine"},
+    "Launch WE-Downloader": {"en": "Launch WE-Downloader", "fr": "Lancer WE-Downloader", "tn": "Lancer WE-Downloader", "es": "Iniciar WE-Downloader", "de": "WE-Downloader starten", "ar": "تشغيل WE-Downloader"},
 }
 
 TWEAK_DESCS = {
@@ -1140,6 +1161,23 @@ TWEAK_DESCS = {
     "Disable Application Impact Telemetry (AIT)": {'en': 'Stops Windows from tracking which apps you launch, how often, and for how long. Removes a hidden performance monitoring layer that runs on every process start.', 'fr': 'Empêche Windows de suivre quelles apps vous lancez et combien de temps. Supprime une couche de surveillance cachée.', 'tn': 'Ymanea Windows men ytracker quel applis testa3melhom w qaddech de temps. Ynahi couche surveillance cachée.', 'es': 'Evita que Windows rastree qué apps abres, con qué frecuencia y cuánto tiempo. Elimina capa de monitoreo oculta.', 'de': 'Verhindert App-Startverfolgung — welche Apps, wie oft, wie lange. Entfernt versteckte Überwachungsschicht.', 'ar': 'يمنع Windows من تتبع التطبيقات المفتوحة ومدة استخدامها. يزيل طبقة مراقبة مخفية.'},
     "Disable Taskbar Search Box & Highlights": {'en': 'Removes the Bing search box and trending search highlights from the taskbar. Reclaim space and stop accidental web searches from Start menu.', 'fr': 'Supprime la boîte de recherche Bing et les highlights de la barre des tâches. Récupérez de l\'espace.', 'tn': 'Ynahi search box Bing w highlights mel taskbar. Récupérez espace w twaqqaf recherches web accidentelles.', 'es': 'Elimina el cuadro de búsqueda Bing y los destacados de la barra de tareas. Recupera espacio y evita búsquedas web accidentales.', 'de': 'Entfernt Bing-Suchfeld und Trending-Highlights aus der Taskleiste. Platz zurückgewinnen.', 'ar': 'يزيل مربع بحث Bing والاتجاهات من شريط المهام. استعد المساحة وأوقف البحث العرضي.'},
     "Disable News & Interests Widget": {'en': 'Kills the Windows 10/11 news widget that wastes RAM, CPU, and bandwidth loading MSN content. Removes it from taskbar completely.', 'fr': 'Supprime le widget d\'actualités Windows qui gaspille RAM, CPU et bande passante. Le retire complètement de la barre des tâches.', 'tn': 'Ytaffi widget actualités Windows eli ykassr RAM, CPU w bandwidth. Ynah7ih mel taskbar kamla.', 'es': 'Elimina el widget de noticias que desperdicia RAM, CPU y ancho de banda. Lo quita completamente de la barra de tareas.', 'de': 'Entfernt das Nachrichten-Widget das RAM, CPU und Bandbreite verschwendet. Vollständig aus Taskleiste entfernen.', 'ar': 'يزيل أداة الأخبار التي تهدر الذاكرة والمعالج وعرض النطاق. يزيلها من شريط المهام بالكامل.'},
+    "Disable Automatic Maintenance": {'en': 'Prevents Windows automatic maintenance (defrag, diagnostics, updates) from running on schedule. Eliminates random background CPU/disk spikes during gaming.', 'fr': 'Empêche la maintenance automatique Windows (defrag, diagnostics) de s\'exécuter. Élimine les pics CPU/disque aléatoires.', 'tn': 'Ymanea maintenance automatique Windows (defrag, diagnostics) men texécuta. Yna77i spikes CPU/disque random.', 'es': 'Evita que el mantenimiento automático (desfrag, diagnósticos) se ejecute. Elimina picos aleatorios de CPU/disco.', 'de': 'Verhindert automatische Windows-Wartung (Defrag, Diagnose). Beseitigt zufällige CPU/Festplatten-Spitzen.', 'ar': 'يمنع الصيانة التلقائية (إلغاء التجزئة والتشخيص) من العمل. يزيل قفزات المعالج/القرص العشوائية.'},
+    "Disable Storage Sense (Auto Disk Cleanup)": {'en': 'Stops Windows from automatically deleting temp files, Recycle Bin contents, and Downloads folder items. Prevents surprise file deletions. Clean manually when you choose.', 'fr': 'Empêche Windows de supprimer automatiquement les fichiers temporaires et la corbeille. Nettoyez manuellement quand vous voulez.', 'tn': 'Ymanea Windows men yna77i fichiers temp w corbeille automatiquement. Nettoyez manuellement ki t7eb.', 'es': 'Evita que Windows elimine automáticamente archivos temporales y la papelera. Limpia manualmente cuando quieras.', 'de': 'Verhindert automatisches Löschen von Temp-Dateien und Papierkorb. Manuell bereinigen wenn gewünscht.', 'ar': 'يمنع Windows من حذف الملفات المؤقتة وسلة المحذوفات تلقائياً. نظّف يدوياً عندما تريد.'},
+    "Set GPU Thread Priority to Maximum": {'en': 'Sets MMCSS GPU Priority to 8 (highest) and game task scheduling to High for the Windows Games profile. Ensures GPU render calls from your game always get serviced first.', 'fr': 'Définit la priorité GPU MMCSS à 8 (max) et la planification des tâches jeu à Haute. Les appels GPU de votre jeu sont toujours servis en premier.', 'tn': 'Y7ot GPU Priority MMCSS 3la 8 (maximum) w scheduling jeux 3la High. GPU calls ta3 jeu dima prioritaires.', 'es': 'Establece prioridad GPU MMCSS a 8 (máxima) y programación de juegos a Alta. Las llamadas GPU de tu juego siempre se atienden primero.', 'de': 'Setzt MMCSS GPU-Priorität auf 8 (max) und Spiele-Scheduling auf Hoch. GPU-Aufrufe Ihres Spiels werden immer zuerst bedient.', 'ar': 'يعيّن أولوية GPU في MMCSS إلى 8 (الأقصى) وجدولة الألعاب إلى عالية. استدعاءات GPU من لعبتك تُخدم أولاً دائماً.'},
+    "Force High Performance NVIDIA Power Management": {'en': 'Sets NVIDIA PowerMizer to maximum performance level globally via registry. Prevents GPU from downclocking during gameplay. NVIDIA-only — harmless no-op on AMD.', 'fr': 'Force le PowerMizer NVIDIA au niveau max via registre. Empêche le GPU de baisser sa fréquence en jeu. NVIDIA uniquement.', 'tn': 'Yforci NVIDIA PowerMizer lel max via registre. Ymanea GPU men yna99as fréquence fil jeu. NVIDIA bark.', 'es': 'Fuerza PowerMizer NVIDIA al máximo rendimiento vía registro. Evita que la GPU baje frecuencia en juego. Solo NVIDIA.', 'de': 'Setzt NVIDIA PowerMizer auf maximale Leistung per Registry. Verhindert GPU-Downclocking im Spiel. Nur NVIDIA.', 'ar': 'يعيّن PowerMizer NVIDIA لأقصى أداء عبر السجل. يمنع GPU من خفض التردد أثناء اللعب. NVIDIA فقط.'},
+    "Disable LMHOSTS Lookup": {'en': 'Disables legacy LMHOSTS file name resolution — an ancient NetBIOS mechanism from the Windows 95 era. Removes an unnecessary DNS fallback step and slightly speeds up name resolution.', 'fr': 'Désactive la résolution LMHOSTS — un mécanisme NetBIOS ancien de l\'ère Windows 95. Supprime une étape DNS inutile.', 'tn': 'Ytaffi résolution LMHOSTS — mécanisme NetBIOS 9dim men waqt Windows 95. Yna77i étape DNS inutile.', 'es': 'Desactiva resolución LMHOSTS — mecanismo NetBIOS antiguo de la era Windows 95. Elimina paso DNS innecesario.', 'de': 'Deaktiviert LMHOSTS-Namensauflösung — ein altes NetBIOS-Relikt aus der Windows 95-Ära. Entfernt unnötigen DNS-Fallback.', 'ar': 'يعطل تحليل أسماء LMHOSTS — آلية NetBIOS قديمة من عصر Windows 95. يزيل خطوة DNS غير ضرورية.'},
+    "Disable SMBv1 Protocol (Security Hardening)": {'en': 'Disables the old SMBv1 file sharing protocol exploited by WannaCry and EternalBlue. SMBv2/v3 remain active. Essential security hardening Microsoft recommends on all systems.', 'fr': 'Désactive le protocole SMBv1 exploité par WannaCry et EternalBlue. SMBv2/v3 restent actifs. Durcissement sécuritaire recommandé par Microsoft.', 'tn': 'Ytaffi protocole SMBv1 eli WannaCry w EternalBlue exploitawh. SMBv2/v3 yab9aw actifs. Sécurité recommandée par Microsoft.', 'es': 'Desactiva protocolo SMBv1 explotado por WannaCry y EternalBlue. SMBv2/v3 siguen activos. Endurecimiento de seguridad recomendado.', 'de': 'Deaktiviert das alte SMBv1-Protokoll (WannaCry/EternalBlue-Exploit). SMBv2/v3 bleiben aktiv. Microsoft-empfohlene Sicherheitshärtung.', 'ar': 'يعطل بروتوكول SMBv1 القديم المستغل من WannaCry وEternalBlue. SMBv2/v3 يبقون نشطين. تقوية أمنية توصي بها Microsoft.'},
+    "Disable Activity History / Timeline": {'en': 'Stops Windows from recording which apps you open, files you access, and websites you visit in the Activity History timeline. Prevents sync to Microsoft cloud.', 'fr': 'Empêche Windows d\'enregistrer les apps ouvertes, fichiers accédés et sites visités dans l\'historique des activités. Empêche la sync cloud.', 'tn': 'Ymanea Windows men yenregistri apps, fichiers w sites fil historique activités. Ymanea sync cloud.', 'es': 'Evita que Windows registre apps abiertas, archivos accedidos y sitios visitados en el historial de actividades. Evita sync a la nube.', 'de': 'Verhindert Aufzeichnung geöffneter Apps, Dateien und Websites im Aktivitätsverlauf. Verhindert Cloud-Sync.', 'ar': 'يمنع Windows من تسجيل التطبيقات والملفات والمواقع في سجل النشاط. يمنع المزامنة السحابية.'},
+    "Disable Find My Device": {'en': 'Disables the Find My Device location tracking service. Prevents Windows from periodically sending your device location to Microsoft servers.', 'fr': 'Désactive le service Localiser mon appareil. Empêche Windows d\'envoyer périodiquement votre position à Microsoft.', 'tn': 'Ytaffi service Find My Device. Ymanea Windows men yab3ath position ta3ek lel Microsoft.', 'es': 'Desactiva el servicio Encontrar mi dispositivo. Evita que Windows envíe periódicamente tu ubicación a Microsoft.', 'de': 'Deaktiviert den Dienst "Mein Gerät suchen". Verhindert periodisches Senden des Standorts an Microsoft.', 'ar': 'يعطل خدمة العثور على جهازي. يمنع Windows من إرسال موقعك دورياً إلى خوادم Microsoft.'},
+    "Disable Settings Sync to Microsoft": {'en': 'Prevents Windows from syncing your settings (themes, passwords, language) to your Microsoft account. Keeps your configuration local and private.', 'fr': 'Empêche la synchronisation de vos paramètres (thèmes, mots de passe, langue) vers votre compte Microsoft.', 'tn': 'Ymanea sync paramètres (thèmes, mots de passe, langue) lel compte Microsoft ta3ek.', 'es': 'Evita la sincronización de configuración (temas, contraseñas, idioma) a tu cuenta Microsoft. Mantiene tu configuración local.', 'de': 'Verhindert Synchronisierung von Einstellungen (Designs, Passwörter, Sprache) mit Ihrem Microsoft-Konto.', 'ar': 'يمنع مزامنة إعداداتك (السمات وكلمات المرور واللغة) مع حساب Microsoft. يبقي إعداداتك محلية وخاصة.'},
+    "Disable Windows Spotlight (Lock Screen Ads)": {'en': 'Removes Microsoft ad-driven wallpapers, tips, and suggestions from the lock screen. Stops background image downloads from Bing. Clean static lock screen.', 'fr': 'Supprime les fonds d\'écran publicitaires, conseils et suggestions de l\'écran de verrouillage. Arrête les téléchargements Bing.', 'tn': 'Yna77i fonds écran pub, conseils w suggestions mel lock screen. Ytaffi téléchargements Bing. Lock screen propre.', 'es': 'Elimina fondos publicitarios, consejos y sugerencias de la pantalla de bloqueo. Detiene descargas de Bing. Pantalla de bloqueo limpia.', 'de': 'Entfernt werbegesteuerte Hintergründe, Tipps und Vorschläge vom Sperrbildschirm. Stoppt Bing-Downloads.', 'ar': 'يزيل خلفيات الإعلانات والنصائح والاقتراحات من شاشة القفل. يوقف تنزيلات Bing. شاشة قفل نظيفة.'},
+    "Disable Remote Registry Service": {'en': 'Prevents remote computers from modifying your Windows registry. Security hardening — remote registry is a common attack vector useless for home PCs.', 'fr': 'Empêche les ordinateurs distants de modifier votre registre. Durcissement sécuritaire — registre distant inutile pour les PC domestiques.', 'tn': 'Ymanea PC distants men ybaddlou registre ta3ek. Sécurité — remote registry inutile lel PC domestiques.', 'es': 'Evita que PCs remotos modifiquen tu registro. Endurecimiento de seguridad — registro remoto inútil para PCs domésticos.', 'de': 'Verhindert Registry-Änderungen durch Remote-Computer. Sicherheitshärtung — Remote-Registry für Heim-PCs nutzlos.', 'ar': 'يمنع الحواسيب البعيدة من تعديل سجل Windows. تقوية أمنية — التسجيل عن بُعد عديم الفائدة للحواسيب المنزلية.'},
+    "Disable Distributed Transaction Coordinator": {'en': 'Stops the MSDTC service used for multi-database enterprise transactions. Completely useless for home/gaming PCs. Saves a startup service and closes an RPC endpoint.', 'fr': 'Arrête le service MSDTC utilisé pour les transactions d\'entreprise multi-bases. Inutile pour les PC domestiques/gaming.', 'tn': 'Ytaffi service MSDTC lel transactions entreprise multi-bases. Inutile lel PC domestiques/gaming.', 'es': 'Detiene el servicio MSDTC para transacciones empresariales multi-base. Inútil para PCs domésticos/gaming.', 'de': 'Stoppt MSDTC-Dienst für Enterprise-Datenbanktransaktionen. Für Heim-/Gaming-PCs völlig nutzlos.', 'ar': 'يوقف خدمة MSDTC للمعاملات المؤسسية متعددة القواعد. عديمة الفائدة تماماً لحواسيب المنزل/الألعاب.'},
+    "Clean Shader Cache (DirectX, NVIDIA, AMD)": {'en': 'Deletes compiled shader caches for DirectX, NVIDIA, and AMD. Forces fresh shader compilation — fixes corrupted artifacts and stuttering from stale cache. Games rebuild caches automatically.', 'fr': 'Supprime les caches de shaders compilés DirectX, NVIDIA, AMD. Force une recompilation — corrige artefacts et saccades. Les jeux reconstruisent automatiquement.', 'tn': 'Yna77i caches shaders compilés DirectX, NVIDIA, AMD. Yforci recompilation — ysalah artefacts w saccades. Jeux y3awdou bniwhom.', 'es': 'Elimina cachés de shaders compilados DirectX, NVIDIA, AMD. Fuerza recompilación — corrige artefactos y stuttering. Los juegos reconstruyen automáticamente.', 'de': 'Löscht kompilierte Shader-Caches für DirectX, NVIDIA, AMD. Erzwingt Neukompilierung — behebt Artefakte und Stottern.', 'ar': 'يحذف ذاكرة التظليل المترجمة لـ DirectX وNVIDIA وAMD. يفرض ترجمة جديدة — يصلح التشوهات والتلعثم.'},
+    "Enable Verbose Boot Status Messages": {'en': 'Shows detailed service startup/shutdown messages during boot instead of the Windows logo. See exactly which service is starting or stopping. Great for diagnosing slow boots.', 'fr': 'Affiche les messages détaillés de démarrage/arrêt des services au lieu du logo Windows. Idéal pour diagnostiquer les démarrages lents.', 'tn': 'Ywari messages détaillés démarrage/arrêt services blasa logo Windows. Ysa3dek tdiagnostiki démarrages lents.', 'es': 'Muestra mensajes detallados de inicio/cierre de servicios en lugar del logo Windows. Ideal para diagnosticar arranques lentos.', 'de': 'Zeigt detaillierte Dienst-Start-/Stopp-Meldungen beim Booten statt Windows-Logo. Ideal für langsame Boot-Diagnose.', 'ar': 'يعرض رسائل تفصيلية لبدء/إيقاف الخدمات أثناء الإقلاع بدلاً من شعار Windows. رائع لتشخيص الإقلاع البطيء.'},
+    "Disable Snap Layouts Flyout (Win 11)": {'en': 'Removes the snap layout grid popup when hovering over the maximize button in Windows 11. Prevents accidental window snapping. Keyboard users prefer this off.', 'fr': 'Supprime le popup de grille Snap Layouts au survol du bouton maximiser dans Windows 11. Empêche le snap accidentel.', 'tn': 'Yna77i popup grille Snap Layouts ki thoveri 3la bouton maximiser fi Win 11. Ymanea snap accidentel.', 'es': 'Elimina la cuadrícula Snap Layouts al pasar sobre el botón maximizar en Windows 11. Evita snapping accidental.', 'de': 'Entfernt das Snap-Layout-Popup beim Hover über den Maximieren-Button in Windows 11. Verhindert versehentliches Snappen.', 'ar': 'يزيل نافذة تخطيطات Snap عند التمرير فوق زر التكبير في Windows 11. يمنع التثبيت العرضي.'},
+    "Launch Wallpaper Engine": {'en': 'Launches Wallpaper Engine from the NormieTools directory. Set videos, GIFs, and interactive scenes as your desktop wallpaper. Place the WallpaperEngine folder next to NormieTools.exe.', 'fr': 'Lance Wallpaper Engine depuis le dossier NormieTools. Définissez vidéos, GIFs et scènes interactives comme fond d\'écran.', 'tn': 'Ylanci Wallpaper Engine men dossier NormieTools. 7ot vidéos, GIFs w scènes interactives ka fond d\'écran.', 'es': 'Inicia Wallpaper Engine desde la carpeta NormieTools. Establece vídeos, GIFs y escenas interactivas como fondo.', 'de': 'Startet Wallpaper Engine aus dem NormieTools-Verzeichnis. Videos, GIFs und interaktive Szenen als Desktop-Hintergrund.', 'ar': 'يشغل Wallpaper Engine من مجلد NormieTools. اجعل الفيديو والصور المتحركة والمشاهد التفاعلية خلفية سطح مكتبك.'},
+    "Launch WE-Downloader": {'en': 'Launches WE-Downloader to browse and download live wallpapers from Steam Workshop. Place the WE-Downloader folder next to NormieTools.exe.', 'fr': 'Lance WE-Downloader pour parcourir et télécharger des fonds d\'écran animés depuis le Steam Workshop.', 'tn': 'Ylanci WE-Downloader bash tbrowsi w tna99as fonds écran animés men Steam Workshop.', 'es': 'Inicia WE-Downloader para explorar y descargar fondos de pantalla animados de Steam Workshop.', 'de': 'Startet WE-Downloader zum Durchsuchen und Herunterladen von Live-Wallpapers aus dem Steam Workshop.', 'ar': 'يشغل WE-Downloader لتصفح وتنزيل خلفيات حية من Steam Workshop.'},
 }
 
 _current_lang = "en"
@@ -1460,6 +1498,24 @@ CATEGORIES = {
                     'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management" /v "LargeSystemCache" /t REG_DWORD /d 1 /f',
                 ],
             },
+            {
+                "name": "Disable Automatic Maintenance",
+                "reverse": ['reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\Maintenance" /v "MaintenanceDisabled" /t REG_DWORD /d 0 /f'],
+                "desc": "Prevents Windows automatic maintenance (defrag, diagnostics, updates) from running on schedule. Eliminates random background CPU/disk spikes during gaming.",
+                "risk": MEDIUM,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\Maintenance" /v "MaintenanceDisabled" /t REG_DWORD /d 1 /f',
+                ],
+            },
+            {
+                "name": "Disable Storage Sense (Auto Disk Cleanup)",
+                "reverse": ['reg delete "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\StorageSense" /v "AllowStorageSenseGlobal" /f 2>nul'],
+                "desc": "Stops Windows from automatically deleting temp files, Recycle Bin contents, and Downloads folder items. Prevents surprise file deletions. Clean manually when you choose.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\StorageSense" /v "AllowStorageSenseGlobal" /t REG_DWORD /d 0 /f',
+                ],
+            },
         ],
     },
     "GPU  &  Gaming": {
@@ -1692,6 +1748,32 @@ CATEGORIES = {
                 "cmds": [
                     'reg add "HKCU\\Control Panel\\Desktop" /v "CursorShadow" /t REG_DWORD /d 0 /f',
                     'reg add "HKCU\\Control Panel\\Desktop" /v "SmoothScroll" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Set GPU Thread Priority to Maximum",
+                "reverse": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "GPU Priority" /t REG_DWORD /d 2 /f',
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "Priority" /t REG_DWORD /d 2 /f',
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "Scheduling Category" /t REG_SZ /d "Medium" /f',
+                ],
+                "desc": "Sets MMCSS GPU Priority to 8 (highest) and game task scheduling to High for the Windows Games profile. Ensures GPU render calls from your game always get serviced first.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "GPU Priority" /t REG_DWORD /d 8 /f',
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "Priority" /t REG_DWORD /d 6 /f',
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "Scheduling Category" /t REG_SZ /d "High" /f',
+                ],
+            },
+            {
+                "name": "Force High Performance NVIDIA Power Management",
+                "desc": "Sets NVIDIA PowerMizer to maximum performance level globally via registry. Prevents GPU from downclocking during gameplay. NVIDIA-only — harmless no-op on AMD.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000" /v "PerfLevelSrc" /t REG_DWORD /d 8738 /f',
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000" /v "PowerMizerEnable" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000" /v "PowerMizerLevel" /t REG_DWORD /d 1 /f',
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000" /v "PowerMizerLevelAC" /t REG_DWORD /d 1 /f',
                 ],
             },
         ],
@@ -1997,6 +2079,25 @@ CATEGORIES = {
                 "risk": SAFE,
                 "cmds": [
                     'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\NlaSvc\\Parameters\\Internet" /v "EnableActiveProbing" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable LMHOSTS Lookup",
+                "reverse": ['reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\NetBT\\Parameters" /v "EnableLMHOSTS" /t REG_DWORD /d 1 /f'],
+                "desc": "Disables legacy LMHOSTS file name resolution — an ancient NetBIOS mechanism from the Windows 95 era. Removes an unnecessary DNS fallback step and slightly speeds up name resolution.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\NetBT\\Parameters" /v "EnableLMHOSTS" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable SMBv1 Protocol (Security Hardening)",
+                "reverse": ['reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters" /v "SMB1" /t REG_DWORD /d 1 /f'],
+                "desc": "Disables the old SMBv1 file sharing protocol exploited by WannaCry and EternalBlue. SMBv2/v3 remain active. Essential security hardening Microsoft recommends on all systems.",
+                "risk": LOW,
+                "cmds": [
+                    'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters" /v "SMB1" /t REG_DWORD /d 0 /f',
+                    'sc config lanmanworkstation depend= bowser/mrxsmb20/nsi',
                 ],
             },
         ],
@@ -2590,6 +2691,44 @@ CATEGORIES = {
                     'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat" /v "DisableInventory" /t REG_DWORD /d 1 /f',
                 ],
             },
+            {
+                "name": "Disable Activity History / Timeline",
+                "desc": "Stops Windows from recording which apps you open, files you access, and websites you visit in the Activity History timeline. Prevents sync to Microsoft cloud.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v "EnableActivityFeed" /t REG_DWORD /d 0 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v "PublishUserActivities" /t REG_DWORD /d 0 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v "UploadUserActivities" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Find My Device",
+                "desc": "Disables the Find My Device location tracking service. Prevents Windows from periodically sending your device location to Microsoft servers.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\FindMyDevice" /v "AllowFindMyDevice" /t REG_DWORD /d 0 /f',
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Settings\\FindMyDevice" /v "LocationSyncEnabled" /t REG_DWORD /d 0 /f',
+                ],
+            },
+            {
+                "name": "Disable Settings Sync to Microsoft",
+                "desc": "Prevents Windows from syncing your settings (themes, passwords, language) to your Microsoft account. Keeps your configuration local and private.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\SettingSync" /v "DisableSettingSync" /t REG_DWORD /d 2 /f',
+                    'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\SettingSync" /v "DisableSettingSyncUserOverride" /t REG_DWORD /d 1 /f',
+                ],
+            },
+            {
+                "name": "Disable Windows Spotlight (Lock Screen Ads)",
+                "desc": "Removes Microsoft ad-driven wallpapers, tips, and suggestions from the lock screen. Stops background image downloads from Bing. Clean static lock screen.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" /v "DisableWindowsSpotlightFeatures" /t REG_DWORD /d 1 /f',
+                    'reg add "HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" /v "DisableWindowsSpotlightOnActionCenter" /t REG_DWORD /d 1 /f',
+                    'reg add "HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" /v "DisableWindowsSpotlightWindowsWelcomeExperience" /t REG_DWORD /d 1 /f',
+                ],
+            },
         ],
     },
     "Services  &  Tasks": {
@@ -2795,6 +2934,26 @@ CATEGORIES = {
                     'sc stop PhoneSvc', 'sc config PhoneSvc start= disabled',
                 ],
             },
+            {
+                "name": "Disable Remote Registry Service",
+                "reverse": ['sc config RemoteRegistry start= demand'],
+                "desc": "Prevents remote computers from modifying your Windows registry. Security hardening — remote registry is a common attack vector useless for home PCs.",
+                "risk": LOW,
+                "cmds": [
+                    'sc config RemoteRegistry start= disabled',
+                    'sc stop RemoteRegistry 2>nul',
+                ],
+            },
+            {
+                "name": "Disable Distributed Transaction Coordinator",
+                "reverse": ['sc config MSDTC start= demand'],
+                "desc": "Stops the MSDTC service used for multi-database enterprise transactions. Completely useless for home/gaming PCs. Saves a startup service and closes an RPC endpoint.",
+                "risk": SAFE,
+                "cmds": [
+                    'sc config MSDTC start= disabled',
+                    'sc stop MSDTC 2>nul',
+                ],
+            },
         ],
     },
     "Cleanup": {
@@ -2911,6 +3070,19 @@ CATEGORIES = {
                 "cmds": [
                     'netsh winsock reset',
                     'netsh int ip reset',
+                ],
+            },
+            {
+                "name": "Clean Shader Cache (DirectX, NVIDIA, AMD)",
+                "desc": "Deletes compiled shader caches for DirectX, NVIDIA, and AMD. Forces fresh shader compilation — fixes corrupted artifacts and stuttering from stale cache. Games rebuild caches automatically.",
+                "risk": SAFE,
+                "cmds": [
+                    'rd /s /q "%LOCALAPPDATA%\\D3DSCache" 2>nul',
+                    'rd /s /q "%LOCALAPPDATA%\\NVIDIA\\DXCache" 2>nul',
+                    'rd /s /q "%LOCALAPPDATA%\\NVIDIA\\GLCache" 2>nul',
+                    'rd /s /q "%LOCALAPPDATA%\\AMD\\DxCache" 2>nul',
+                    'rd /s /q "%LOCALAPPDATA%\\AMD\\GLCache" 2>nul',
+                    'mkdir "%LOCALAPPDATA%\\D3DSCache" 2>nul',
                 ],
             },
         ],
@@ -3099,6 +3271,24 @@ CATEGORIES = {
                 "cmds": [
                     'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh" /v "AllowNewsAndInterests" /t REG_DWORD /d 0 /f',
                     'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Feeds" /v "ShellFeedsTaskbarViewMode" /t REG_DWORD /d 2 /f',
+                ],
+            },
+            {
+                "name": "Enable Verbose Boot Status Messages",
+                "reverse": ['reg delete "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "VerboseStatus" /f 2>nul'],
+                "desc": "Shows detailed service startup/shutdown messages during boot instead of the Windows logo. See exactly which service is starting or stopping. Great for diagnosing slow boots.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "VerboseStatus" /t REG_DWORD /d 1 /f',
+                ],
+            },
+            {
+                "name": "Disable Snap Layouts Flyout (Win 11)",
+                "reverse": ['reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "EnableSnapAssistFlyout" /t REG_DWORD /d 1 /f'],
+                "desc": "Removes the snap layout grid popup when hovering over the maximize button in Windows 11. Prevents accidental window snapping. Keyboard users prefer this off.",
+                "risk": SAFE,
+                "cmds": [
+                    'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "EnableSnapAssistFlyout" /t REG_DWORD /d 0 /f',
                 ],
             },
         ],
@@ -4143,6 +4333,22 @@ CATEGORIES = {
                 "desc": "Dual-pane file manager inspired by Total Commander. Tabs, built-in viewer, FTP, archive support.",
                 "risk": SAFE,
                 "cmds": ['winget install --id alexx2000.DoubleCommander --accept-package-agreements --accept-source-agreements -h'],
+            },
+            {
+                "name": "Launch Wallpaper Engine",
+                "desc": "Launches Wallpaper Engine from the NormieTools directory. Set videos, GIFs, and interactive scenes as your desktop wallpaper. Place the WallpaperEngine folder next to NormieTools.exe.",
+                "risk": SAFE,
+                "cmds": [
+                    'if exist "%ProgramFiles%\\NormieTools\\WallpaperEngine\\launcher.exe" (start "" "%ProgramFiles%\\NormieTools\\WallpaperEngine\\launcher.exe") else (echo [!] Wallpaper Engine not found. & echo     Place the WallpaperEngine folder in %ProgramFiles%\\NormieTools\\ & echo. & pause)',
+                ],
+            },
+            {
+                "name": "Launch WE-Downloader",
+                "desc": "Launches WE-Downloader to browse and download live wallpapers from Steam Workshop. Place the WE-Downloader folder next to NormieTools.exe.",
+                "risk": SAFE,
+                "cmds": [
+                    'if exist "%ProgramFiles%\\NormieTools\\WE-Downloader\\WE-Downloader-alexjoneso.exe" (start "" "%ProgramFiles%\\NormieTools\\WE-Downloader\\WE-Downloader-alexjoneso.exe") else (echo [!] WE-Downloader not found. & echo     Place the WE-Downloader folder in %ProgramFiles%\\NormieTools\\ & echo. & pause)',
+                ],
             },
         ],
     },

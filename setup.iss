@@ -30,6 +30,13 @@ Source: "Dark Fantasy - shahi77.mp3"; DestDir: "{app}"; Flags: ignoreversion
 Source: "gnome.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "installer_license.txt"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 Source: "INFO_BEFORE.txt"; DestDir: "{app}"; DestName: "README.txt"; Flags: ignoreversion
+; Wallpaper Engine & WE-Downloader (place folders next to setup.iss to bundle)
+#if FileExists("WallpaperEngine\launcher.exe")
+Source: "WallpaperEngine\*"; DestDir: "{app}\WallpaperEngine"; Flags: ignoreversion recursesubdirs createallsubdirs
+#endif
+#if FileExists("WE-Downloader\WE-Downloader-alexjoneso.exe")
+Source: "WE-Downloader\*"; DestDir: "{app}\WE-Downloader"; Flags: ignoreversion recursesubdirs createallsubdirs
+#endif
 
 [Icons]
 Name: "{group}\NormieTools"; Filename: "{app}\NormieTools.exe"; IconFilename: "{app}\gnome.ico"
