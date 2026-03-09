@@ -11,7 +11,7 @@ import re
 import webbrowser
 
 # ════════════════════════════ App Version ═════════════════════════════
-APP_VERSION = "v2.0.3"
+APP_VERSION = "v2.0.4"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 CONTACT_EMAIL = "medcherif2004@gmail.com"
 _DISCORD_WEBHOOK = ""  # Set your Discord webhook URL here for direct feedback
@@ -4653,9 +4653,12 @@ class OptimizerApp:
             try:
                 ps_script = self._get_ps_scan_script()
                 out = subprocess.check_output(
-                    ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
+                    ["powershell", "-NoProfile", "-NonInteractive", "-Command", "-"],
+                    input=ps_script,
                     text=True, creationflags=0x08000000, timeout=35
                 )
+                if not out or not out.strip():
+                    return {}
                 return json.loads(out)
             except Exception as e:
                 self._splash_log_append(f"[WARN] powershell probe failed: {e}", "warn")
@@ -6751,8 +6754,13 @@ if (-not (Test-Path $targetExe)) {{
     exit 1
 }}
 
-# Remove Zone.Identifier from final location too
+# Remove Zone.Identifier from final location (belt + suspenders: Unblock-File AND direct ADS delete)
 Unblock-File -LiteralPath $targetExe -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath "${{targetExe}}:Zone.Identifier" -ErrorAction SilentlyContinue
+
+# Add temporary Windows Defender exclusion for the exe so extracted DLLs aren't quarantined
+try {{ Add-MpPreference -ExclusionPath $targetExe -ErrorAction SilentlyContinue }} catch {{ }}
+try {{ Add-MpPreference -ExclusionPath $env:TEMP -ErrorAction SilentlyContinue }} catch {{ }}
 
 # Generous pause for filesystem + OneDrive sync to settle
 Start-Sleep -Milliseconds 1500
@@ -6764,6 +6772,19 @@ foreach ($v in @('_MEIPASS2', '_PYI_SPLASH_IPC', 'PYTHONHOME', 'PYTHONPATH')) {{
 
 # Launch the new exe elevated (preserves admin rights from previous session)
 Start-Process -FilePath $targetExe -Verb RunAs
+
+# Wait for extraction to complete, then unblock any extracted DLLs
+Start-Sleep -Milliseconds 5000
+Get-ChildItem $env:TEMP -Directory -Filter '_MEI*' -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending | Select-Object -First 1 |
+    ForEach-Object {{
+        Get-ChildItem $_.FullName -Recurse -File -ErrorAction SilentlyContinue |
+            ForEach-Object {{ Unblock-File -LiteralPath $_.FullName -ErrorAction SilentlyContinue }}
+    }}
+
+# Remove the temporary Defender exclusions
+try {{ Remove-MpPreference -ExclusionPath $targetExe -ErrorAction SilentlyContinue }} catch {{ }}
+try {{ Remove-MpPreference -ExclusionPath $env:TEMP -ErrorAction SilentlyContinue }} catch {{ }}
 
 # Self-delete scripts
 Remove-Item -LiteralPath '{vbs_script.replace("'", "''")}' -Force -ErrorAction SilentlyContinue

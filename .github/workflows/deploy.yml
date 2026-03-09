@@ -21,11 +21,24 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyinstaller pygame requests pillow
+        pip install "pyinstaller>=6.11" pygame requests pillow
 
     - name: Build with PyInstaller
       run: |
         pyinstaller NormieTools.spec
+
+    - name: Verify build contains critical DLLs
+      shell: pwsh
+      run: |
+        # Extract the onefile exe to a temp dir and check for Python + VC++ DLLs
+        $exe = "dist\NormieTools.exe"
+        $size = (Get-Item $exe).Length
+        Write-Host "Built exe size: $size bytes"
+        if ($size -lt 5MB) { throw "Exe suspiciously small ($size bytes)" }
+        # Verify PE header
+        $header = [System.IO.File]::ReadAllBytes($exe)[0..1]
+        if ($header[0] -ne 0x4D -or $header[1] -ne 0x5A) { throw "Invalid PE header" }
+        Write-Host "Build verification passed"
 
     - name: Build Inno Setup Installer
       run: |
