@@ -10,7 +10,7 @@ import re
 import webbrowser
 
 # ════════════════════════════ App Version ═════════════════════════════
-APP_VERSION = "v1.1.8"
+APP_VERSION = "v1.1.9"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 CONTACT_EMAIL = "medcherif2004@gmail.com"
 
@@ -4382,6 +4382,16 @@ class OptimizerApp:
         self._build_ui_basic()
         self._play_music()
 
+        # ── Keyboard shortcuts ──
+        self.root.bind("<Control-a>", self._select_all)
+        self.root.bind("<Control-A>", self._select_all)
+        self.root.bind("<Control-e>", lambda e: self._apply())
+        self.root.bind("<Control-E>", lambda e: self._apply())
+        self.root.bind("<Control-d>", self._deselect_all)
+        self.root.bind("<Control-D>", self._deselect_all)
+        self.root.bind("<Control-f>", self._focus_search)
+        self.root.bind("<Control-F>", self._focus_search)
+
         # ── Show loading screen, then reveal main window once ready ──
         if SKIP_LOADING:
             self._load_specs()
@@ -4984,6 +4994,19 @@ class OptimizerApp:
             command=lambda: self._switch_tab("aihelp"))
         self._aihelp_tab_btn.pack(side="left", padx=(0, 4))
         
+        # ── Search bar for tweaks ──
+        tweaks_search_frame = tk.Frame(tweaks_frame, bg=PANEL_COLOR)
+        tweaks_search_frame.pack(fill="x", padx=8, pady=(4, 2))
+        tk.Label(tweaks_search_frame, text="\U0001F50D", font=("Segoe UI Emoji", 12),
+                 bg=PANEL_COLOR, fg=TEXT_MUTED).pack(side="left", padx=(0, 6))
+        self._tweaks_search_var = tk.StringVar()
+        tweaks_search_entry = tk.Entry(tweaks_search_frame, textvariable=self._tweaks_search_var,
+                                       font=("Courier New", 10), bg="#1a1a1a", fg="#FFFFFF",
+                                       insertbackground="#FFFFFF", relief="flat",
+                                       highlightbackground="#333333", highlightthickness=1)
+        tweaks_search_entry.pack(side="left", fill="x", expand=True, ipady=4)
+        self._tweaks_search_var.trace_add("write", lambda *a: self._filter_tweaks())
+        self._tweaks_search_frame = tweaks_search_frame
 
         scroll_container = tk.Frame(tweaks_frame, bg=PANEL_COLOR)
         scroll_container.pack(fill="both", expand=True, padx=0, pady=0)
@@ -5040,6 +5063,10 @@ class OptimizerApp:
         self._risk_labels = {}
         self._tool_name_lbls = {}
         self._tool_desc_lbls = {}
+        self._tweak_rows = {}      # tweak_name -> row Frame
+        self._tweak_cat_hdrs = {}  # cat_name -> cat_hdr Frame
+        self._tweak_cat_map = {}   # tweak_name -> cat_name
+        self._tweaks_grid = grid
         for cat_name, cat_data in CATEGORIES.items():
             if "Tools" in cat_name and "Downloads" in cat_name:
                 continue
@@ -5050,6 +5077,7 @@ class OptimizerApp:
                      bg=PANEL_COLOR, fg=ACCENT_CYAN, anchor="w")
             cat_lbl.pack(side="left")
             self._cat_labels[cat_name] = cat_lbl
+            self._tweak_cat_hdrs[cat_name] = cat_hdr
             tk.Label(cat_hdr, text=f"({len(cat_data['tweaks'])})", font=("Courier New", 8),
                      bg=PANEL_COLOR, fg=TEXT_MUTED, anchor="w").pack(side="left", padx=6)
 
@@ -5060,6 +5088,8 @@ class OptimizerApp:
                 # Full-width row for each tweak
                 row = tk.Frame(grid, bg=PANEL_COLOR)
                 row.pack(fill="x", padx=4, pady=1)
+                self._tweak_rows[tw["name"]] = row
+                self._tweak_cat_map[tw["name"]] = cat_name
 
                 # Left: checkbox with full name
                 chk = tk.Checkbutton(
@@ -5333,6 +5363,11 @@ class OptimizerApp:
         self.exec_btn = tk.Button(bottom, text=f">> {_t('execute')} <<", font=("Arial Black", 11), bg=ACCENT_RED, fg=BG_COLOR, relief="flat", activebackground=ACCENT_CYAN, activeforeground=BG_COLOR, command=self._apply, cursor="hand2")
         self.exec_btn.pack(side="right", padx=15, pady=3, ipadx=14, ipady=4)
 
+        # Keyboard shortcut hints
+        shortcuts_lbl = tk.Label(bottom, text="Ctrl+A Select  Ctrl+D Clear  Ctrl+F Search  Ctrl+E Execute",
+                                 font=("Courier New", 7), bg=BG_COLOR, fg="#444444")
+        shortcuts_lbl.pack(side="right", padx=8, pady=4)
+
         self._update_stats()
 
     # ══════════════════════ Feedback / Rating Dialog ══════════════════════
@@ -5353,6 +5388,14 @@ class OptimizerApp:
         for name, frame in frames.items():
             frame.pack_forget()
         frames[tab].pack(fill="both", expand=True, padx=0, pady=0)
+        # Show/hide tweaks search bar based on active tab
+        if tab == "tweaks":
+            self._tweaks_search_frame.pack(fill="x", padx=8, pady=(4, 2))
+            # Re-insert scroll_container after search frame
+            self._tweaks_scroll_frame.pack_forget()
+            self._tweaks_scroll_frame.pack(fill="both", expand=True, padx=0, pady=0)
+        else:
+            self._tweaks_search_frame.pack_forget()
         for name, btn in btns.items():
             if name == tab:
                 btn.configure(bg=ACCENT_RED, fg="#FFFFFF")
@@ -5415,6 +5458,57 @@ class OptimizerApp:
         self._tools_grid.update_idletasks()
         self._tools_canvas.configure(scrollregion=self._tools_canvas.bbox("all"))
         self._tools_canvas.yview_moveto(0)
+
+    def _filter_tweaks(self):
+        """Filter tweaks grid based on search query."""
+        query = self._tweaks_search_var.get().lower().strip()
+        words = query.split() if query else []
+
+        # Track which categories have visible tweaks
+        cat_visible = {cat_name: False for cat_name in self._tweak_cat_hdrs}
+
+        for tweak_name, row in self._tweak_rows.items():
+            if not words:
+                row.pack(fill="x", padx=4, pady=1)
+                cat_name = self._tweak_cat_map.get(tweak_name, "")
+                if cat_name:
+                    cat_visible[cat_name] = True
+            else:
+                blob = f"{tweak_name} {_tn(tweak_name)} {_td(tweak_name)}".lower()
+                if any(w in blob for w in words):
+                    row.pack(fill="x", padx=4, pady=1)
+                    cat_name = self._tweak_cat_map.get(tweak_name, "")
+                    if cat_name:
+                        cat_visible[cat_name] = True
+                else:
+                    row.pack_forget()
+
+        for cat_name, hdr in self._tweak_cat_hdrs.items():
+            if cat_visible.get(cat_name, False):
+                hdr.pack(fill="x", padx=4, pady=(14, 4))
+            else:
+                hdr.pack_forget()
+
+        self._tweaks_grid.update_idletasks()
+        self.tweaks_canvas.configure(scrollregion=self.tweaks_canvas.bbox("all"))
+        self.tweaks_canvas.yview_moveto(0)
+
+    def _focus_search(self, e=None):
+        """Focus the search bar of the currently active tab."""
+        if self._current_tab == "tweaks":
+            for w in self._tweaks_search_frame.winfo_children():
+                if isinstance(w, tk.Entry):
+                    w.focus_set()
+                    w.select_range(0, "end")
+                    break
+        elif self._current_tab == "tools":
+            for w in self._tools_frame.winfo_children():
+                for c in w.winfo_children():
+                    if isinstance(c, tk.Entry):
+                        c.focus_set()
+                        c.select_range(0, "end")
+                        return
+        return "break"
 
     # ════════════════════ AI Chat Helper Methods ═════════════════════════
 
@@ -6997,7 +7091,17 @@ if ($startups) { Write-Output ("Startup Items: " + $startups.Count) }
         to_restore = sum(1 for name in self.initially_applied
                          if name in self.tweak_vars and not self.tweak_vars[name][0].get())
         total = len(self.tweak_vars)
-        self.stats_lbl.configure(text=_t("stats", a=to_apply, r=to_restore, t=total))
+        base = _t("stats", a=to_apply, r=to_restore, t=total)
+        # Risk breakdown for selected items
+        risk_counts = {}
+        for var, tw in self.tweak_vars.values():
+            if var.get():
+                rlabel = tw["risk"][0].upper() if tw.get("risk") else "?"
+                risk_counts[rlabel] = risk_counts.get(rlabel, 0) + 1
+        if risk_counts:
+            parts = [f"{v}{k[0]}" for k, v in sorted(risk_counts.items())]
+            base += f"  [{'/'.join(parts)}]"
+        self.stats_lbl.configure(text=base)
 
     # ════════════════════════════ Music Toggle ════════════════════════════
     def _show_tooltip_at_cursor(self, text, color):
