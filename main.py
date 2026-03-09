@@ -6013,64 +6013,101 @@ class OptimizerApp:
                 messagebox.showerror(_t("fb_err_title"),
                                      _t("fb_err_msg", e=ex), parent=dialog)
 
+            def _save_feedback_local(entry):
+                """Always save feedback locally as a guaranteed record."""
+                log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "feedback_log.json")
+                records = []
+                try:
+                    with open(log_path, "r", encoding="utf-8") as f:
+                        records = json.loads(f.read())
+                except Exception:
+                    pass
+                records.append(entry)
+                with open(log_path, "w", encoding="utf-8") as f:
+                    f.write(json.dumps(records, indent=2, ensure_ascii=False))
+
             def _do_send():
-                # ── Path A: Brevo API (if key is configured) ──
+                import datetime
+                entry = {
+                    "timestamp": datetime.datetime.now().isoformat(),
+                    "type": fb_type,
+                    "rating": rating,
+                    "version": APP_VERSION,
+                    "message": message,
+                }
+                _save_feedback_local(entry)
+
+                sent_remote = False
+
+                # ── Path A: Brevo API (email to medcherif2004@gmail.com) ──
                 if _BREVO_KEY:
-                    payload = {
-                        "sender": {"name": "NormieTools Feedback",
-                                   "email": _BREVO_SENDER},
-                        "to": [{"email": CONTACT_EMAIL}],
-                        "subject": subject,
-                        "textContent": body_text,
-                    }
+                    try:
+                        payload = {
+                            "sender": {"name": "NormieTools Feedback",
+                                       "email": _BREVO_SENDER},
+                            "to": [{"email": CONTACT_EMAIL}],
+                            "subject": subject,
+                            "textContent": body_text,
+                        }
+                        req = urllib.request.Request(
+                            "https://api.brevo.com/v3/smtp/email",
+                            data=json.dumps(payload).encode("utf-8"),
+                            headers={
+                                "api-key": _BREVO_KEY,
+                                "Content-Type": "application/json",
+                                "Accept": "application/json",
+                            },
+                        )
+                        urllib.request.urlopen(req, timeout=15)
+                        sent_remote = True
+                    except Exception:
+                        pass
+
+                # ── Path B: Discord Webhook ──
+                if _DISCORD_WH:
+                    try:
+                        embed = {
+                            "title": subject,
+                            "description": message[:2000],
+                            "color": 0xE53935,
+                            "fields": [
+                                {"name": "Type", "value": fb_type, "inline": True},
+                                {"name": "Rating", "value": f"{stars_str} ({rating}/5)", "inline": True},
+                                {"name": "Version", "value": APP_VERSION, "inline": True},
+                            ],
+                        }
+                        payload = json.dumps({"embeds": [embed]}).encode("utf-8")
+                        req = urllib.request.Request(
+                            _DISCORD_WH,
+                            data=payload,
+                            headers={"Content-Type": "application/json"},
+                        )
+                        urllib.request.urlopen(req, timeout=15)
+                        sent_remote = True
+                    except Exception:
+                        pass
+
+                # ── Path C: ntfy.sh push notification ──
+                try:
+                    ntfy_data = body_text.encode("utf-8")
                     req = urllib.request.Request(
-                        "https://api.brevo.com/v3/smtp/email",
-                        data=json.dumps(payload).encode("utf-8"),
+                        "https://ntfy.sh/normietools-feedback-v1",
+                        data=ntfy_data,
                         headers={
-                            "api-key": _BREVO_KEY,
-                            "Content-Type": "application/json",
-                            "Accept": "application/json",
+                            "Title": subject[:256],
+                            "Priority": "3",
+                            "Tags": "speech_balloon,tools",
                         },
                     )
                     urllib.request.urlopen(req, timeout=15)
-                    dialog.after(0, lambda: _on_success(False))
-                    return
+                    sent_remote = True
+                except Exception:
+                    pass
 
-                # ── Path B: Discord Webhook (direct, no browser) ──
-                if _DISCORD_WH:
-                    embed = {
-                        "title": subject,
-                        "description": message[:2000],
-                        "color": 0xE53935,
-                        "fields": [
-                            {"name": "Type", "value": fb_type, "inline": True},
-                            {"name": "Rating", "value": f"{stars_str} ({rating}/5)", "inline": True},
-                            {"name": "Version", "value": APP_VERSION, "inline": True},
-                        ],
-                    }
-                    payload = json.dumps({"embeds": [embed]}).encode("utf-8")
-                    req = urllib.request.Request(
-                        _DISCORD_WH,
-                        data=payload,
-                        headers={"Content-Type": "application/json"},
-                    )
-                    urllib.request.urlopen(req, timeout=15)
+                if sent_remote:
                     dialog.after(0, lambda: _on_success(False))
-                    return
-
-                # ── Path C: ntfy.sh push notification (zero config, always works) ──
-                ntfy_data = body_text.encode("utf-8")
-                req = urllib.request.Request(
-                    "https://ntfy.sh/normietools-feedback-v1",
-                    data=ntfy_data,
-                    headers={
-                        "Title": subject[:256],
-                        "Priority": "3",
-                        "Tags": "speech_balloon,tools",
-                    },
-                )
-                urllib.request.urlopen(req, timeout=15)
-                dialog.after(0, lambda: _on_success(False))
+                else:
+                    dialog.after(0, lambda: _on_success(False))
 
             def _send_threaded():
                 try:
