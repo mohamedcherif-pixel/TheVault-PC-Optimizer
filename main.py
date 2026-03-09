@@ -11,7 +11,7 @@ import re
 import webbrowser
 
 # ════════════════════════════ App Version ═════════════════════════════
-APP_VERSION = "v2.0.1"
+APP_VERSION = "v2.0.2"
 GITHUB_REPO = "mohamedcherif-pixel/TheVault-PC-Optimizer"
 CONTACT_EMAIL = "medcherif2004@gmail.com"
 _DISCORD_WEBHOOK = ""  # Set your Discord webhook URL here for direct feedback
