@@ -40,23 +40,23 @@ def is_admin():
 
 
 # ═══════════════════════════ Color Palette ════════════════════════════
-BG          = "#1e1e1e"
-BG_CARD     = "#252526"
-BG_HOVER    = "#2d2d30"
-BG_INPUT    = "#333333"
-ACCENT      = "#007acc"
-ACCENT_DIM  = "#005c99"
-ACCENT_GLOW = "#0098ff"
-TEXT        = "#cccccc"
-TEXT_DIM    = "#999999"
-TEXT_DARK   = "#666666"
-GREEN       = "#00b894"
-YELLOW      = "#fdcb6e"
-RED         = "#d63031"
-ORANGE      = "#e17055"
-BORDER      = "#3e3e42"
-SIDEBAR_BG  = "#252526"
-SIDEBAR_SEL = "#37373d"
+BG          = "#FFFFFF"
+BG_CARD     = "#F5F5F5"
+BG_HOVER    = "#EBEBEB"
+BG_INPUT    = "#FFFFFF"
+ACCENT      = "#E53935"
+ACCENT_DIM  = "#C62828"
+ACCENT_GLOW = "#FF5252"
+TEXT        = "#1A1A1A"
+TEXT_DIM    = "#666666"
+TEXT_DARK   = "#333333"
+GREEN       = "#2E7D32"
+YELLOW      = "#E65100"
+RED         = "#E53935"
+ORANGE      = "#FF8800"
+BORDER      = "#CCCCCC"
+SIDEBAR_BG  = "#F5F5F5"
+SIDEBAR_SEL = "#EBEBEB"
 
 
 # ════════════════════════════ Risk levels ═════════════════════════════
@@ -4367,7 +4367,7 @@ class OptimizerApp:
             except Exception:
                 pass
 
-        self.root.configure(bg="#000000")
+        self.root.configure(bg="#FFFFFF")
 
         # Track tweak state
         self.tweak_vars = {}   # tweak_name -> (BooleanVar, tweak_dict)
@@ -4407,7 +4407,7 @@ class OptimizerApp:
         splash = tk.Toplevel(self.root)
         splash.title("NormieTools // INITIALIZING")
         splash.overrideredirect(True)
-        splash.configure(bg="#000000")
+        splash.configure(bg="#FFFFFF")
         splash.attributes("-topmost", True)
 
         sw, sh = 780, 420
@@ -4416,17 +4416,17 @@ class OptimizerApp:
         splash.geometry(f"{sw}x{sh}+{x}+{y}")
 
         # Red border
-        border = tk.Frame(splash, bg="#FF1A00", bd=0)
+        border = tk.Frame(splash, bg="#E53935", bd=0)
         border.pack(fill="both", expand=True, padx=2, pady=2)
-        inner = tk.Frame(border, bg="#000000", bd=0)
+        inner = tk.Frame(border, bg="#FFFFFF", bd=0)
         inner.pack(fill="both", expand=True, padx=1, pady=1)
 
         # Layout: left = animation, right = text/progress
-        content = tk.Frame(inner, bg="#000000")
+        content = tk.Frame(inner, bg="#FFFFFF")
         content.pack(fill="both", expand=True, padx=10, pady=10)
 
         # LEFT: BMP animation panel
-        anim_frame = tk.Frame(content, bg="#0A0A0A", highlightbackground="#FF1A00",
+        anim_frame = tk.Frame(content, bg="#F5F5F5", highlightbackground="#E53935",
                               highlightthickness=1, width=170, height=320)
         anim_frame.pack(side="left", padx=(5, 15), pady=5)
         anim_frame.pack_propagate(False)
@@ -4447,7 +4447,7 @@ class OptimizerApp:
         except Exception:
             self._splash_frames = []
 
-        self._anim_label = tk.Label(anim_frame, bg="#0A0A0A", bd=0)
+        self._anim_label = tk.Label(anim_frame, bg="#F5F5F5", bd=0)
         self._anim_label.pack(expand=True)
         if self._splash_frames:
             self._anim_label.configure(image=self._splash_frames[0])
@@ -4455,65 +4455,65 @@ class OptimizerApp:
             # Fallback: show styled text when BMP frames can't load
             self._anim_label.configure(
                 text="N\nO\nR\nM\nI\nE",
-                font=("Arial Black", 28), fg="#FF1A00", justify="center")
+                font=("Arial Black", 28), fg="#E53935", justify="center")
 
         # RIGHT: info panel
-        right = tk.Frame(content, bg="#000000")
+        right = tk.Frame(content, bg="#FFFFFF")
         right.pack(side="left", fill="both", expand=True)
 
         # Title
         tk.Label(right, text="NormieTools", font=("Arial Black", 20),
-                 bg="#000000", fg="#FF1A00", anchor="w").pack(fill="x", pady=(5, 0))
-        tk.Frame(right, bg="#FF1A00", height=2).pack(fill="x", pady=(2, 0))
+                 bg="#FFFFFF", fg="#E53935", anchor="w").pack(fill="x", pady=(5, 0))
+        tk.Frame(right, bg="#E53935", height=2).pack(fill="x", pady=(2, 0))
         tk.Label(right, text="PC Optimizer  //  v" + APP_VERSION,
                  font=("Courier New", 9, "bold"),
-                 bg="#000000", fg="#00DDFF", anchor="w").pack(fill="x", pady=(2, 8))
+                 bg="#FFFFFF", fg="#333333", anchor="w").pack(fill="x", pady=(2, 8))
 
         # Terminal log (scrolling text feed)
-        log_frame = tk.Frame(right, bg="#050505", highlightbackground="#222222",
+        log_frame = tk.Frame(right, bg="#F0F0F0", highlightbackground="#CCCCCC",
                              highlightthickness=1, height=140)
         log_frame.pack(fill="x", pady=(0, 8))
         log_frame.pack_propagate(False)
-        self._splash_log = tk.Text(log_frame, bg="#050505", fg="#00FF88",
+        self._splash_log = tk.Text(log_frame, bg="#F0F0F0", fg="#2E7D32",
                                    font=("Courier New", 8), relief="flat", bd=0,
                                    highlightthickness=0, state="disabled",
                                    wrap="none", padx=6, pady=4, cursor="arrow")
         self._splash_log.pack(fill="both", expand=True)
-        self._splash_log.tag_configure("dim", foreground="#555555")
-        self._splash_log.tag_configure("ok", foreground="#00FF88")
-        self._splash_log.tag_configure("warn", foreground="#FFD700")
-        self._splash_log.tag_configure("cmd", foreground="#00DDFF")
-        self._splash_log.tag_configure("red", foreground="#FF1A00")
+        self._splash_log.tag_configure("dim", foreground="#999999")
+        self._splash_log.tag_configure("ok", foreground="#2E7D32")
+        self._splash_log.tag_configure("warn", foreground="#E65100")
+        self._splash_log.tag_configure("cmd", foreground="#1565C0")
+        self._splash_log.tag_configure("red", foreground="#E53935")
 
         # Status line
         status_var = tk.StringVar(value=">> INITIALIZING SUBSYSTEMS...")
         tk.Label(right, textvariable=status_var, font=("Courier New", 10, "bold"),
-                 bg="#000000", fg="#888888", anchor="w").pack(fill="x", pady=(0, 4))
+                 bg="#FFFFFF", fg="#666666", anchor="w").pack(fill="x", pady=(0, 4))
 
         # Progress bar
-        bar_outer = tk.Frame(right, bg="#222222", height=16)
+        bar_outer = tk.Frame(right, bg="#DDDDDD", height=16)
         bar_outer.pack(fill="x", pady=(0, 4))
         bar_outer.pack_propagate(False)
-        bar_fill = tk.Frame(bar_outer, bg="#FF1A00", height=16, width=0)
+        bar_fill = tk.Frame(bar_outer, bg="#E53935", height=16, width=0)
         bar_fill.place(x=0, y=0, relheight=1)
         # Scan line overlay on progress bar
-        self._splash_scan_line = tk.Frame(bar_outer, bg="#FFFFFF", width=2, height=16)
+        self._splash_scan_line = tk.Frame(bar_outer, bg="#E53935", width=2, height=16)
         self._splash_scan_line.place(x=0, y=0, relheight=1)
         self._splash_scan_pos = 0
 
         # Bottom info
-        bottom_info = tk.Frame(right, bg="#000000")
+        bottom_info = tk.Frame(right, bg="#FFFFFF")
         bottom_info.pack(fill="x")
         pct_var = tk.StringVar(value="0%")
         tk.Label(bottom_info, textvariable=pct_var, font=("Courier New", 10, "bold"),
-                 bg="#000000", fg="#FF1A00", anchor="w").pack(side="left")
+                 bg="#FFFFFF", fg="#E53935", anchor="w").pack(side="left")
         sub_var = tk.StringVar(value="warming up subsystems...")
         tk.Label(bottom_info, textvariable=sub_var, font=("Courier New", 8),
-                 bg="#000000", fg="#555555", anchor="e").pack(side="right")
+                 bg="#FFFFFF", fg="#888888", anchor="e").pack(side="right")
 
         # Branding
         tk.Label(right, text="tools by MedCherif", font=("Courier New", 8),
-                 bg="#000000", fg="#333333", anchor="e").pack(fill="x", pady=(4, 0))
+                 bg="#FFFFFF", fg="#AAAAAA", anchor="e").pack(fill="x", pady=(4, 0))
 
         self._splash = splash
         self._splash_status = status_var
@@ -4847,10 +4847,10 @@ class OptimizerApp:
 
     # ═══════════════════ NormieTools PC Optimization UI ═══════════════════
     def _build_ui_basic(self):
-        BG_COLOR = "#000000"
-        PANEL_COLOR = "#050505"
-        ACCENT_RED = "#FF1A00"
-        ACCENT_CYAN = "#00DDFF"
+        BG_COLOR = "#FFFFFF"
+        PANEL_COLOR = "#F5F5F5"
+        ACCENT_RED = "#E53935"
+        ACCENT_CYAN = "#1A1A1A"
         TEXT_MUTED = "#888888"
         
         self.root.configure(bg=BG_COLOR)
@@ -4871,10 +4871,10 @@ class OptimizerApp:
 
         # Animated song name marquee
         self._song_name = "Dark Fantasy - shahi77"
-        marquee_container = tk.Frame(music_frame, bg="#111111", highlightbackground=ACCENT_RED, highlightthickness=1, width=180, height=20)
+        marquee_container = tk.Frame(music_frame, bg="#EBEBEB", highlightbackground=ACCENT_RED, highlightthickness=1, width=180, height=20)
         marquee_container.pack(side="left", padx=(6, 0))
         marquee_container.pack_propagate(False)
-        self._marquee_canvas = tk.Canvas(marquee_container, bg="#111111", highlightthickness=0, height=18)
+        self._marquee_canvas = tk.Canvas(marquee_container, bg="#EBEBEB", highlightthickness=0, height=18)
         self._marquee_canvas.pack(fill="both", expand=True)
         padded = f"  \u266B  NOW PLAYING: {self._song_name}  \u266B  "
         self._marquee_text_id = self._marquee_canvas.create_text(180, 9, text=padded, font=("Courier New", 8, "bold"), fill=ACCENT_CYAN, anchor="w")
@@ -4889,8 +4889,8 @@ class OptimizerApp:
         self.lang_lbl.pack(side="left")
         self.lang_combo = tk.StringVar(value="English")
         lang_menu = tk.OptionMenu(lang_frame, self.lang_combo, *SUPPORTED_LANGS, command=self._on_lang_change)
-        lang_menu.configure(font=("Courier New", 9), bg="#111111", fg="#00DDFF", highlightthickness=0, relief="flat", activebackground="#FF1A00")
-        lang_menu["menu"].configure(bg="#111111", fg="#00DDFF", font=("Courier New", 9))
+        lang_menu.configure(font=("Courier New", 9), bg="#EBEBEB", fg="#1A1A1A", highlightthickness=0, relief="flat", activebackground="#E53935")
+        lang_menu["menu"].configure(bg="#EBEBEB", fg="#1A1A1A", font=("Courier New", 9))
         lang_menu.pack(side="left", padx=4)
 
         # ”€”€ Star Rating (always visible on main page) + Feedback button ”€”€
@@ -4900,7 +4900,7 @@ class OptimizerApp:
         self.star_labels = []
         for i in range(5):
             sl = tk.Label(rate_area, text="\u2606", font=("Arial", 20),
-                          bg=BG_COLOR, fg="#444444", cursor="hand2")
+                          bg=BG_COLOR, fg="#BBBBBB", cursor="hand2")
             sl.pack(side="left", padx=1)
             self.star_labels.append(sl)
 
@@ -4926,8 +4926,8 @@ class OptimizerApp:
 
         # Highlighted FEEDBACK button
         self.fb_btn = tk.Button(rate_area, text=_t("feedback_btn"), font=("Arial Black", 10),
-                           bg="#FF8800", fg="#000000", relief="flat", bd=0, cursor="hand2",
-                           activebackground=ACCENT_CYAN, activeforeground="#000000",
+                           bg="#FF8800", fg="#FFFFFF", relief="flat", bd=0, cursor="hand2",
+                           activebackground=ACCENT_CYAN, activeforeground="#FFFFFF",
                            command=self._show_feedback_dialog)
         self.fb_btn.pack(side="left", padx=(8, 0), ipadx=10, ipady=2)
 
@@ -4935,7 +4935,7 @@ class OptimizerApp:
         # -- Red scan line separator --
         scan_line = tk.Frame(self.root, bg=ACCENT_RED, height=2)
         scan_line.pack(fill="x", padx=10, pady=(0, 0))
-        scan_shadow = tk.Frame(self.root, bg="#330800", height=1)
+        scan_shadow = tk.Frame(self.root, bg="#FFE0E0", height=1)
         scan_shadow.pack(fill="x", padx=10, pady=(0, 5))
 
         # ═══════════════ Body Minimalist Brutalist Split Screen ═══════════════
@@ -4983,13 +4983,13 @@ class OptimizerApp:
         self._tweaks_tab_btn.pack(side="left", padx=(0, 4))
         
         self._tools_tab_btn = tk.Button(tab_bar, text="\u2B07 TOOLS", font=("Arial Black", 9),
-            bg="#333333", fg="#888888", relief="flat", bd=0, padx=12, pady=3,
+            bg="#DDDDDD", fg="#666666", relief="flat", bd=0, padx=12, pady=3,
             activebackground=ACCENT_RED, activeforeground="#FFFFFF",
             command=lambda: self._switch_tab("tools"))
         self._tools_tab_btn.pack(side="left", padx=(0, 4))
 
         self._aihelp_tab_btn = tk.Button(tab_bar, text="\U0001F916 AI HELP", font=("Arial Black", 9),
-            bg="#333333", fg="#888888", relief="flat", bd=0, padx=12, pady=3,
+            bg="#DDDDDD", fg="#666666", relief="flat", bd=0, padx=12, pady=3,
             activebackground=ACCENT_RED, activeforeground="#FFFFFF",
             command=lambda: self._switch_tab("aihelp"))
         self._aihelp_tab_btn.pack(side="left", padx=(0, 4))
@@ -5001,9 +5001,9 @@ class OptimizerApp:
                  bg=PANEL_COLOR, fg=TEXT_MUTED).pack(side="left", padx=(0, 6))
         self._tweaks_search_var = tk.StringVar()
         tweaks_search_entry = tk.Entry(tweaks_search_frame, textvariable=self._tweaks_search_var,
-                                       font=("Courier New", 10), bg="#1a1a1a", fg="#FFFFFF",
-                                       insertbackground="#FFFFFF", relief="flat",
-                                       highlightbackground="#333333", highlightthickness=1)
+                                       font=("Courier New", 10), bg="#FFFFFF", fg="#1A1A1A",
+                                       insertbackground="#1A1A1A", relief="flat",
+                                       highlightbackground="#CCCCCC", highlightthickness=1)
         tweaks_search_entry.pack(side="left", fill="x", expand=True, ipady=4)
         self._tweaks_search_var.trace_add("write", lambda *a: self._filter_tweaks())
         self._tweaks_search_frame = tweaks_search_frame
@@ -5048,7 +5048,7 @@ class OptimizerApp:
                 risk_name = risk_tuple[0].upper()
                 if "HIGH" in risk_name: return ACCENT_RED
                 if "MEDIUM" in risk_name: return "#FF8800"
-                return "#66BB6A"
+                return "#388E3C"
             except Exception:
                 return TEXT_MUTED
 
@@ -5098,8 +5098,8 @@ class OptimizerApp:
                     text=_tn(tw["name"]),
                     font=("Courier New", 8, "bold"),
                     bg=PANEL_COLOR,
-                    fg="#FFFFFF",
-                    selectcolor=BG_COLOR,
+                    fg="#1A1A1A",
+                    selectcolor="#FFFFFF",
                     activebackground=PANEL_COLOR,
                     activeforeground=ACCENT_RED,
                     anchor="w",
@@ -5123,7 +5123,7 @@ class OptimizerApp:
                 right_side.pack(side="right", padx=(4, 6))
 
                 applied_lbl = tk.Label(right_side, text="", font=("Courier New", 8, "bold"),
-                                       bg=PANEL_COLOR, fg="#00FF66", anchor="e")
+                                       bg=PANEL_COLOR, fg="#2E7D32", anchor="e")
                 applied_lbl.pack(side="right", padx=(4, 0))
                 self.tweak_applied_lbls[tw["name"]] = applied_lbl
 
@@ -5149,9 +5149,9 @@ class OptimizerApp:
                  bg=PANEL_COLOR, fg=TEXT_MUTED).pack(side="left", padx=(0, 6))
         self._tools_search_var = tk.StringVar()
         tools_search_entry = tk.Entry(search_frame, textvariable=self._tools_search_var,
-                                      font=("Courier New", 10), bg="#1a1a1a", fg="#FFFFFF",
-                                      insertbackground="#FFFFFF", relief="flat",
-                                      highlightbackground="#333333", highlightthickness=1)
+                                      font=("Courier New", 10), bg="#FFFFFF", fg="#1A1A1A",
+                                      insertbackground="#1A1A1A", relief="flat",
+                                      highlightbackground="#CCCCCC", highlightthickness=1)
         tools_search_entry.pack(side="left", fill="x", expand=True, ipady=4)
         tools_search_entry.insert(0, "")
         self._tools_search_var.trace_add("write", lambda *a: self._filter_tools())
@@ -5211,24 +5211,24 @@ class OptimizerApp:
                 var = tk.BooleanVar(value=False)
                 self.tweak_vars[tw["name"]] = (var, tw)
                 
-                card = tk.Frame(tools_grid, bg="#1a1a1a", highlightbackground="#333333",
+                card = tk.Frame(tools_grid, bg="#FFFFFF", highlightbackground="#CCCCCC",
                                highlightthickness=1, padx=10, pady=6)
                 card.grid(row=grid_row, column=col, sticky="nsew", padx=4, pady=3)
                 self._tool_cards[tw["name"]] = card
                 self._tool_subcat_map[tw["name"]] = subcat_name
                 
-                top_row = tk.Frame(card, bg="#1a1a1a")
+                top_row = tk.Frame(card, bg="#FFFFFF")
                 top_row.pack(fill="x")
                 
                 try:
                     icon_lbl = tk.Label(top_row, text=icon, font=("Segoe UI Emoji", 16),
-                                       bg="#1a1a1a", fg="#FFFFFF")
+                                       bg="#FFFFFF", fg="#1A1A1A")
                 except Exception:
                     icon_lbl = tk.Label(top_row, text=icon, font=("Arial", 16),
-                                       bg="#1a1a1a", fg="#FFFFFF")
+                                       bg="#FFFFFF", fg="#1A1A1A")
                 icon_lbl.pack(side="left", padx=(0, 8))
                 
-                name_frame = tk.Frame(top_row, bg="#1a1a1a")
+                name_frame = tk.Frame(top_row, bg="#FFFFFF")
                 name_frame.pack(side="left", fill="x", expand=True)
                 
                 display_name = _tn(tw["name"])
@@ -5240,13 +5240,13 @@ class OptimizerApp:
                     display_name = display_name[:-len(" installieren")]
                 
                 name_lbl = tk.Label(name_frame, text=display_name,
-                        font=("Arial Black", 10), bg="#1a1a1a", fg="#FFFFFF",
+                        font=("Arial Black", 10), bg="#FFFFFF", fg="#1A1A1A",
                         anchor="w")
                 name_lbl.pack(fill="x")
                 self._tool_name_lbls[tw["name"]] = name_lbl
                 
                 desc_lbl = tk.Label(name_frame, text=_td(tw["name"]),
-                        font=("Courier New", 7), bg="#1a1a1a", fg="#999999",
+                        font=("Courier New", 7), bg="#FFFFFF", fg="#666666",
                         anchor="w", wraplength=250, justify="left")
                 desc_lbl.pack(fill="x")
                 self._tool_desc_lbls[tw["name"]] = desc_lbl
@@ -5255,10 +5255,10 @@ class OptimizerApp:
                     top_row, variable=var,
                     text="INSTALL",
                     font=("Courier New", 8, "bold"),
-                    bg="#1a1a1a", fg="#00FF66",
-                    selectcolor="#000000",
-                    activebackground="#1a1a1a",
-                    activeforeground="#FF1A00",
+                    bg="#FFFFFF", fg="#2E7D32",
+                    selectcolor="#FFFFFF",
+                    activebackground="#FFFFFF",
+                    activeforeground="#E53935",
                     anchor="e",
                     command=self._update_stats,
                     indicatoron=True,
@@ -5267,7 +5267,7 @@ class OptimizerApp:
                 self._tweak_chks[tw["name"]] = install_btn
                 
                 applied_lbl = tk.Label(top_row, text="", font=("Courier New", 7, "bold"),
-                                       bg="#1a1a1a", fg="#00FF66", anchor="e")
+                                       bg="#FFFFFF", fg="#2E7D32", anchor="e")
                 applied_lbl.pack(side="right", padx=(2, 0))
                 self.tweak_applied_lbls[tw["name"]] = applied_lbl
                 
@@ -5286,7 +5286,7 @@ class OptimizerApp:
         # ── AI Help Frame (Groq LLM-powered assistant) ──
         self._aihelp_frame = tk.Frame(tweaks_frame, bg=PANEL_COLOR)
 
-        self._ai_chat = tk.Text(self._aihelp_frame, bg="#0a0a0a", fg="#CCCCCC",
+        self._ai_chat = tk.Text(self._aihelp_frame, bg="#F0F0F0", fg="#333333",
                                 font=("Courier New", 9), wrap="word",
                                 state="disabled", cursor="arrow",
                                 relief="flat", highlightthickness=0,
@@ -5299,30 +5299,30 @@ class OptimizerApp:
 
         self._ai_input_var = tk.StringVar()
         self._ai_entry = tk.Entry(ai_input_frame, textvariable=self._ai_input_var,
-                                  font=("Courier New", 10), bg="#1a1a1a", fg="#FFFFFF",
-                                  insertbackground="#FFFFFF", relief="flat",
-                                  highlightbackground="#333333", highlightthickness=1)
+                                  font=("Courier New", 10), bg="#FFFFFF", fg="#1A1A1A",
+                                  insertbackground="#1A1A1A", relief="flat",
+                                  highlightbackground="#CCCCCC", highlightthickness=1)
         self._ai_entry.pack(side="left", fill="x", expand=True, ipady=5)
         self._ai_entry.bind("<Return>", lambda e: self._ai_send())
 
         tk.Button(ai_input_frame, text="SEND", font=("Courier New", 9, "bold"),
                   bg=ACCENT_RED, fg="#FFFFFF", relief="flat", bd=0,
                   padx=12, cursor="hand2",
-                  activebackground=ACCENT_CYAN, activeforeground="#000000",
+                  activebackground=ACCENT_CYAN, activeforeground="#FFFFFF",
                   command=self._ai_send).pack(side="right", padx=(6, 0))
 
         # Model selector
-        ai_model_frame = tk.Frame(self._aihelp_frame, bg="#111111")
+        ai_model_frame = tk.Frame(self._aihelp_frame, bg="#EBEBEB")
         ai_model_frame.pack(side="top", fill="x", padx=8, pady=(4, 0))
         tk.Label(ai_model_frame, text="MODEL:", font=("Courier New", 8, "bold"),
-                 bg="#111111", fg="#888888").pack(side="left", padx=(4, 4))
+                 bg="#EBEBEB", fg="#888888").pack(side="left", padx=(4, 4))
         self._ai_model_var = tk.StringVar(value="\u26a1 Auto")
         self._ai_model_menu = tk.OptionMenu(ai_model_frame, self._ai_model_var, "\u26a1 Auto")
-        self._ai_model_menu.configure(font=("Courier New", 8), bg="#1a1a1a", fg="#CCCCCC",
-                                       activebackground="#333333", activeforeground="#FFFFFF",
+        self._ai_model_menu.configure(font=("Courier New", 8), bg="#FFFFFF", fg="#333333",
+                                       activebackground="#DDDDDD", activeforeground="#1A1A1A",
                                        relief="flat", highlightthickness=0, bd=0)
-        self._ai_model_menu["menu"].configure(font=("Courier New", 8), bg="#1a1a1a",
-                                                fg="#CCCCCC", activebackground="#FF1A00",
+        self._ai_model_menu["menu"].configure(font=("Courier New", 8), bg="#FFFFFF",
+                                                fg="#333333", activebackground="#E53935",
                                                 activeforeground="#FFFFFF")
         self._ai_model_menu.pack(side="left", fill="x", expand=True)
 
@@ -5331,8 +5331,8 @@ class OptimizerApp:
 
         self._ai_chat.tag_configure("you", foreground=ACCENT_CYAN, font=("Courier New", 9, "bold"))
         self._ai_chat.tag_configure("ai", foreground=ACCENT_RED, font=("Courier New", 9, "bold"))
-        self._ai_chat.tag_configure("msg", foreground="#CCCCCC", font=("Courier New", 9))
-        self._ai_chat.tag_configure("dim", foreground="#666666", font=("Courier New", 8))
+        self._ai_chat.tag_configure("msg", foreground="#333333", font=("Courier New", 9))
+        self._ai_chat.tag_configure("dim", foreground="#999999", font=("Courier New", 8))
 
         self._ai_history = []
         self._ai_api_key = self._load_ai_key()
@@ -5374,7 +5374,7 @@ class OptimizerApp:
 
     def _switch_tab(self, tab):
         """Switch between Tweaks, Tools and AI Help tabs."""
-        ACCENT_RED = "#FF1A00"
+        ACCENT_RED = "#E53935"
         frames = {
             "tweaks": self._tweaks_scroll_frame,
             "tools": self._tools_frame,
@@ -5400,7 +5400,7 @@ class OptimizerApp:
             if name == tab:
                 btn.configure(bg=ACCENT_RED, fg="#FFFFFF")
             else:
-                btn.configure(bg="#333333", fg="#888888")
+                btn.configure(bg="#DDDDDD", fg="#666666")
         self._current_tab = tab
         if tab == "aihelp":
             self._ai_entry.focus_set()
@@ -5869,9 +5869,9 @@ class OptimizerApp:
         return (model_name, response)
 
     def _show_feedback_dialog(self):
-        BG_D = "#0a0a0a"
-        ACCENT_RED = "#FF1A00"
-        ACCENT_CYAN = "#00DDFF"
+        BG_D = "#F0F0F0"
+        ACCENT_RED = "#E53935"
+        ACCENT_CYAN = "#1A1A1A"
         dialog = tk.Toplevel(self.root)
         dialog.title(_t("fb_title"))
         dialog.configure(bg=BG_D)
@@ -5915,7 +5915,7 @@ class OptimizerApp:
         for label in [_t("fb_bug"), _t("fb_suggestion"), _t("fb_general")]:
             tk.Radiobutton(type_frame, text=label, variable=type_var, value=label,
                            font=("Courier New", 9, "bold"), bg=BG_D, fg="#DDDDDD",
-                           selectcolor="#000000", activebackground=BG_D,
+                           selectcolor="#FFFFFF", activebackground=BG_D,
                            activeforeground=ACCENT_RED, cursor="hand2",
                            indicatoron=True).pack(side="left", padx=(0, 12))
 
@@ -5923,10 +5923,10 @@ class OptimizerApp:
         tk.Label(dialog, text=_t("fb_message"), font=("Arial Black", 9),
                  bg=BG_D, fg=ACCENT_CYAN).pack(anchor="w", padx=25, pady=(5, 0))
 
-        msg_text = tk.Text(dialog, font=("Courier New", 9), bg="#111111", fg=ACCENT_CYAN,
+        msg_text = tk.Text(dialog, font=("Courier New", 9), bg="#FFFFFF", fg=ACCENT_CYAN,
                            insertbackground=ACCENT_CYAN, relief="flat", bd=0,
                            highlightthickness=1, highlightcolor=ACCENT_RED,
-                           highlightbackground="#333333", height=8, wrap="word")
+                           highlightbackground="#CCCCCC", height=8, wrap="word")
         msg_text.pack(fill="x", padx=25, pady=(5, 15))
 
         placeholder = _t("fb_placeholder")
@@ -5951,13 +5951,13 @@ class OptimizerApp:
         btn_frame.pack(fill="x", padx=25, pady=(0, 15))
 
         send_btn = tk.Button(btn_frame, text=_t("fb_send"), font=("Arial Black", 10),
-                  bg=ACCENT_RED, fg="#000000", relief="flat", cursor="hand2",
-                  activebackground=ACCENT_CYAN, activeforeground="#000000")
+                  bg=ACCENT_RED, fg="#FFFFFF", relief="flat", cursor="hand2",
+                  activebackground=ACCENT_CYAN, activeforeground="#FFFFFF")
         send_btn.pack(side="right", ipadx=12, ipady=3)
 
         abort_btn = tk.Button(btn_frame, text=_t("fb_abort"), font=("Courier New", 9, "bold"),
-                  bg="#111111", fg="#888888", relief="flat", cursor="hand2",
-                  activebackground=ACCENT_RED, activeforeground="#000000",
+                  bg="#EBEBEB", fg="#888888", relief="flat", cursor="hand2",
+                  activebackground=ACCENT_RED, activeforeground="#FFFFFF",
                   command=dialog.destroy)
         abort_btn.pack(side="right", padx=10)
 
@@ -6526,7 +6526,7 @@ class OptimizerApp:
             progress_win = tk.Toplevel(self.root)
             progress_win.title("Updating...")
             progress_win.geometry("380x120")
-            progress_win.configure(bg="#0a0a0a")
+            progress_win.configure(bg="#F0F0F0")
             progress_win.attributes("-topmost", True)
             progress_win.overrideredirect(True)
             
@@ -6535,8 +6535,8 @@ class OptimizerApp:
             y = (progress_win.winfo_screenheight() // 2) - (h // 2)
             progress_win.geometry(f"{w}x{h}+{x}+{y}")
 
-            tk.Label(progress_win, text=_t("update_patching"), font=("Arial Black", 10), bg="#0a0a0a", fg="#FF1A00").pack(pady=(18, 6))
-            status_lbl = tk.Label(progress_win, text=_t("update_starting"), font=("Courier New", 8), bg="#0a0a0a", fg="#00DDFF")
+            tk.Label(progress_win, text=_t("update_patching"), font=("Arial Black", 10), bg="#F0F0F0", fg="#E53935").pack(pady=(18, 6))
+            status_lbl = tk.Label(progress_win, text=_t("update_starting"), font=("Courier New", 8), bg="#F0F0F0", fg="#1A1A1A")
             status_lbl.pack()
             progress_win.grab_set()  # Modal: block interaction with main window during update
             
@@ -6726,14 +6726,14 @@ objShell.Run "powershell.exe -NoProfile -NonInteractive -WindowStyle Hidden -Exe
         t.config(state="normal")
         t.delete("1.0", "end")
         # Configure colored tags for section headers
-        t.tag_configure("section", foreground="#FF1A00", font=("Courier New", 8, "bold"))
-        t.tag_configure("separator", foreground="#660A00")
-        t.tag_configure("label", foreground="#00DDFF", font=("Courier New", 8, "bold"))
-        t.tag_configure("value", foreground="#AAAAAA", font=("Courier New", 8))
-        t.tag_configure("bar_fill", foreground="#FF1A00")
-        t.tag_configure("bar_empty", foreground="#333333")
-        t.tag_configure("warn", foreground="#FFD700")
-        t.tag_configure("good", foreground="#00FF88")
+        t.tag_configure("section", foreground="#E53935", font=("Courier New", 8, "bold"))
+        t.tag_configure("separator", foreground="#CCCCCC")
+        t.tag_configure("label", foreground="#1A1A1A", font=("Courier New", 8, "bold"))
+        t.tag_configure("value", foreground="#555555", font=("Courier New", 8))
+        t.tag_configure("bar_fill", foreground="#E53935")
+        t.tag_configure("bar_empty", foreground="#CCCCCC")
+        t.tag_configure("warn", foreground="#F9A825")
+        t.tag_configure("good", foreground="#2E7D32")
         t.tag_configure("bad", foreground="#FF4444")
         if raw in ("loading...", "synchronizing...", _t("syncing")):
             t.insert("end", _t("syncing_long") + "\n")
@@ -7000,9 +7000,9 @@ if ($startups) { Write-Output ("Startup Items: " + $startups.Count) }
         tw.attributes("-topmost", True)
         frame = tk.Frame(tw, bg=color, bd=0)
         frame.pack()
-        inner = tk.Frame(frame, bg="#1a1a1a")
+        inner = tk.Frame(frame, bg="#FFFFFF")
         inner.pack(padx=1, pady=1)
-        tk.Label(inner, text=text, font=("Arial", 9), bg="#1a1a1a", fg=color,
+        tk.Label(inner, text=text, font=("Arial", 9), bg="#FFFFFF", fg=color,
                  wraplength=250, padx=10, pady=6, justify="left").pack()
         self.tooltip_win = tw
 
@@ -7114,9 +7114,9 @@ if ($startups) { Write-Output ("Startup Items: " + $startups.Count) }
         tw.attributes("-topmost", True)
         frame = tk.Frame(tw, bg=color, bd=0)
         frame.pack()
-        inner = tk.Frame(frame, bg="#1a1a1a")
+        inner = tk.Frame(frame, bg="#FFFFFF")
         inner.pack(padx=1, pady=1)
-        tk.Label(inner, text=text, font=("Arial", 9), bg="#1a1a1a", fg=color,
+        tk.Label(inner, text=text, font=("Arial", 9), bg="#FFFFFF", fg=color,
                  wraplength=300, padx=10, pady=6, justify="left").pack()
         self.tooltip_win = tw
 
@@ -7238,33 +7238,33 @@ if ($startups) { Write-Output ("Startup Items: " + $startups.Count) }
     # ═══════════════════════════ Apply overlay ════════════════════════════
     def _show_apply_overlay(self, apply_count, restore_count):
         """Overlay shown while tweaks are being prepared."""
-        _RED = "#FF1A00"
-        _CYAN = "#00DDFF"
+        _RED = "#E53935"
+        _CYAN = "#1A1A1A"
         ov = tk.Toplevel(self.root)
         self._overlay = ov  # assign early so cleanup works if widget creation fails
         self._ov_anim_id = None
         ov.overrideredirect(True)
         ov.attributes("-topmost", True)
-        ov.configure(bg="#000000")
+        ov.configure(bg="#FFFFFF")
         w, h = 420, 200
         sx = self.root.winfo_x() + (self.root.winfo_width() - w) // 2
         sy = self.root.winfo_y() + (self.root.winfo_height() - h) // 2
         ov.geometry(f"{w}x{h}+{sx}+{sy}")
         border = tk.Frame(ov, bg=_RED, padx=2, pady=2)
         border.pack(fill="both", expand=True)
-        inner = tk.Frame(border, bg="#050505")
+        inner = tk.Frame(border, bg="#FFFFFF")
         inner.pack(fill="both", expand=True, padx=1, pady=1)
         tk.Label(inner, text="APPLYING TWEAKS", font=("Consolas", 14, "bold"),
-                 bg="#050505", fg=_RED).pack(pady=(15, 5))
+                 bg="#FFFFFF", fg=_RED).pack(pady=(15, 5))
         info = f"Applying {apply_count} tweak(s)"
         if restore_count:
             info += f" | Restoring {restore_count}"
         tk.Label(inner, text=info, font=("Consolas", 10),
-                 bg="#050505", fg=_CYAN).pack()
+                 bg="#FFFFFF", fg=_CYAN).pack()
         self._ov_status = tk.Label(inner, text="Initializing...", font=("Consolas", 9),
-                                   bg="#050505", fg="#888888")
+                                   bg="#FFFFFF", fg="#888888")
         self._ov_status.pack(pady=(8, 4))
-        self._ov_canvas = tk.Canvas(inner, width=360, height=18, bg="#111111",
+        self._ov_canvas = tk.Canvas(inner, width=360, height=18, bg="#EBEBEB",
                                     highlightthickness=1, highlightbackground=_RED)
         self._ov_canvas.pack(pady=(4, 10))
         self._ov_bar = self._ov_canvas.create_rectangle(0, 0, 0, 18, fill=_RED, outline="")
