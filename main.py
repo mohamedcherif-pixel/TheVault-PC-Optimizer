@@ -4240,12 +4240,17 @@ class OptimizerApp:
                     img = Image.open(fp)
                     self._splash_frames.append(ImageTk.PhotoImage(img))
         except Exception:
-            pass
+            self._splash_frames = []
 
         self._anim_label = tk.Label(anim_frame, bg="#0A0A0A", bd=0)
         self._anim_label.pack(expand=True)
         if self._splash_frames:
             self._anim_label.configure(image=self._splash_frames[0])
+        else:
+            # Fallback: show styled text when BMP frames can't load
+            self._anim_label.configure(
+                text="N\nO\nR\nM\nI\nE",
+                font=("Arial Black", 28), fg="#FF1A00", justify="center")
 
         # RIGHT: info panel
         right = tk.Frame(content, bg="#000000")
