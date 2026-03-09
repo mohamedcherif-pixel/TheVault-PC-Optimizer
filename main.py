@@ -6058,29 +6058,19 @@ class OptimizerApp:
                     dialog.after(0, lambda: _on_success(False))
                     return
 
-                # ── Path C: Email via Formsubmit (direct, no browser) ──
-                form_data = urllib.parse.urlencode({
-                    "name": f"NormieTools {APP_VERSION}",
-                    "email": "noreply@normietools.app",
-                    "message": body_text,
-                    "_subject": subject,
-                    "_captcha": "false",
-                    "_template": "box",
-                }).encode("utf-8")
+                # ── Path C: ntfy.sh push notification (zero config, always works) ──
+                ntfy_data = body_text.encode("utf-8")
                 req = urllib.request.Request(
-                    f"https://formsubmit.co/ajax/{CONTACT_EMAIL}",
-                    data=form_data,
+                    "https://ntfy.sh/normietools-feedback-v1",
+                    data=ntfy_data,
                     headers={
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "Accept": "application/json",
+                        "Title": subject[:256],
+                        "Priority": "3",
+                        "Tags": "speech_balloon,tools",
                     },
                 )
-                resp = urllib.request.urlopen(req, timeout=15)
-                if resp.getcode() == 200:
-                    dialog.after(0, lambda: _on_success(False))
-                    return
-
-                raise RuntimeError("Formsubmit returned non-200")
+                urllib.request.urlopen(req, timeout=15)
+                dialog.after(0, lambda: _on_success(False))
 
             def _send_threaded():
                 try:
